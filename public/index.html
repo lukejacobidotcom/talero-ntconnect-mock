@@ -1,355 +1,445 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Talero Markets — Futures, simplified</title>
-<style>
-  :root{
-    --bg:#0a1626; --panel:#0f2236; --panel2:#102842; --line:#1d3450;
-    --navy:#0B1F3A; --blue:#2f6fed; --blueDk:#1b4fc2; --green:#1f9d57;
-    --red:#e5484d; --text:#e8eef6; --muted:#93a4ba; --gold:#d9a441;
-    --radius:14px;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:radial-gradient(1200px 600px at 70% -10%, #15314f 0%, var(--bg) 55%);
-    color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;min-height:100vh}
-  a{color:var(--blue);text-decoration:none}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
-  /* top nav */
-  header{position:sticky;top:0;z-index:20;background:rgba(10,22,38,.82);backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;justify-content:space-between;height:62px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px;font-size:19px}
-  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--blue),#7db1ff);
-    display:grid;place-items:center;color:#06122a;font-weight:900;font-size:18px}
-  .navlinks{display:flex;gap:8px;align-items:center}
-  .btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
-  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
-  .btn-ghost:hover{border-color:#36567c}
-  .btn-primary{background:linear-gradient(135deg,var(--blue),var(--blueDk));color:#fff}
-  .btn-primary:hover{filter:brightness(1.08)}
-  .btn-green{background:linear-gradient(135deg,#21a85e,#147a40);color:#fff}
-  .btn-sm{padding:7px 12px;font-size:13px}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  /* hero */
-  .hero{padding:74px 0 40px;text-align:center}
-  .eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-    color:#8fb6ff;background:rgba(47,111,237,.12);border:1px solid rgba(47,111,237,.3);padding:6px 12px;border-radius:99px}
-  h1.big{font-size:48px;line-height:1.07;margin:20px auto 14px;max-width:760px;letter-spacing:-1px}
-  h1.big span{background:linear-gradient(120deg,#7db1ff,#c8b3ff);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .sub{color:var(--muted);font-size:18px;max-width:600px;margin:0 auto 26px;line-height:1.5}
-  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:54px 0}
-  .feat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
-  .feat h3{margin:8px 0 6px;font-size:16px}
-  .feat p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
-  .feat .ic{width:38px;height:38px;border-radius:10px;background:var(--panel2);display:grid;place-items:center;font-size:20px}
-  .disc{color:#6c7e95;font-size:12px;text-align:center;line-height:1.6;border-top:1px solid var(--line);padding:24px 0 40px;margin-top:30px}
-  /* auth */
-  .center{min-height:calc(100vh - 62px);display:grid;place-items:center;padding:40px 0}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
-  .auth{width:420px;max-width:100%}
-  .tabs{display:flex;background:var(--panel2);border-radius:10px;padding:4px;margin-bottom:20px}
-  .tab{flex:1;text-align:center;padding:9px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;color:var(--muted)}
-  .tab.on{background:var(--blue);color:#fff}
-  label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px;font-weight:600}
-  input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 12px;
-    color:var(--text);font-size:14px;outline:none}
-  input:focus,select:focus{border-color:var(--blue)}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .msg{font-size:13px;margin-top:12px;min-height:18px}
-  .msg.err{color:var(--red)} .msg.ok{color:var(--green)}
-  .muted{color:var(--muted)} .small{font-size:13px}
-  /* dashboard */
-  .dash{padding:26px 0 60px}
-  .pagehead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;gap:16px;flex-wrap:wrap}
-  .pagehead h2{margin:0;font-size:24px}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
-  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
-  .kpi .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px}
-  .kpi .v{font-size:24px;font-weight:800;margin-top:6px}
-  .pos{color:var(--green)} .neg{color:var(--red)}
-  .grid2{display:grid;grid-template-columns:340px 1fr;gap:18px}
-  .acct{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
-  .acct:hover{border-color:#36567c}
-  .acct.on{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset}
-  .acct .top{display:flex;justify-content:space-between;align-items:center}
-  .acct .nm{font-weight:700}
-  .pill{font-size:11px;padding:3px 9px;border-radius:99px;font-weight:700;text-transform:capitalize}
-  .pill.active{background:rgba(31,157,87,.16);color:#54d98c}
-  .pill.pending_funding,.pill.provisioning{background:rgba(217,164,65,.16);color:var(--gold)}
-  .acct .bal{margin-top:8px;font-size:20px;font-weight:800}
-  .acct .sub{color:var(--muted);font-size:12px;margin-top:2px}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
-  .detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-  .bignum{font-size:34px;font-weight:850;letter-spacing:-.5px}
-  .statrow{display:flex;gap:26px;margin:14px 0 18px;flex-wrap:wrap}
-  .statrow .s .l{color:var(--muted);font-size:12px}
-  .statrow .s .v{font-weight:700;font-size:17px;margin-top:2px}
-  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-  table{width:100%;border-collapse:collapse;margin-top:8px}
-  th,td{text-align:left;padding:9px 10px;font-size:13px;border-bottom:1px solid var(--line)}
-  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
-  .sectitle{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:20px 0 4px;font-weight:700}
-  .empty{color:var(--muted);font-size:13px;padding:14px 0}
-  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#12325a;border:1px solid #2f6fed;
-    color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;z-index:50;max-width:90%}
-  .toast.show{opacity:1}
-  .sandbox{background:rgba(217,164,65,.1);border:1px solid rgba(217,164,65,.35);color:var(--gold);
-    font-size:12px;text-align:center;padding:7px}
-  @media(max-width:820px){.features{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}h1.big{font-size:34px}}
-</style>
+<meta charset="UTF-8" />
+<script>
+  window.addEventListener('unhandledrejection', function (e) {
+    try {
+      var r = e && e.reason;
+      var m = (r && (r.message || r.toString && r.toString())) || String(r || '');
+      if (m.indexOf('Not implemented on this platform') !== -1) { e.preventDefault(); e.stopImmediatePropagation && e.stopImmediatePropagation(); }
+    } catch (_) {}
+  });
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Talero Markets — Futures Introducing Broker</title>
+<meta name="description" content="Talero connects serious traders to global futures markets — with institutional execution, full support, and zero noise." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="web/talero-landing.css" />
 </head>
 <body>
-<div class="sandbox">SANDBOX — demo environment on the Talero NT Connect mock. Not a live brokerage. Dummy data only.</div>
-<header><div class="wrap nav">
-  <div class="brand"><div class="logo">T</div> Talero<span class="muted" style="font-weight:600">Markets</span></div>
-  <div class="navlinks" id="nav"></div>
-</div></header>
 
-<main id="app"></main>
-<div class="toast" id="toast"></div>
-
-<script>
-const API = ''; // same origin
-let S = { token: localStorage.getItem('talero_token') || null,
-          email: localStorage.getItem('talero_email') || null,
-          accounts: [], selected: null };
-
-const $ = (h)=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstChild;};
-const app = document.getElementById('app');
-const nav = document.getElementById('nav');
-const fmt = (n)=> (n==null||isNaN(n))?'—':'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const signed = (n)=>{n=Number(n)||0;return (n>=0?'+':'')+fmt(n);};
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200);}
-
-async function api(path, {method='GET', body=null, auth=true}={}){
-  const headers={};
-  if(body) headers['Content-Type']='application/json';
-  if(auth && S.token) headers['Authorization']='Bearer '+S.token;
-  const r = await fetch(API+path,{method,headers,body:body?JSON.stringify(body):undefined});
-  let data={}; try{data=await r.json();}catch(_){}
-  if(!r.ok || data.errorText) throw new Error(data.errorText||('HTTP '+r.status));
-  return data;
-}
-function setSession(t,email){S.token=t;S.email=email;localStorage.setItem('talero_token',t);localStorage.setItem('talero_email',email);}
-function logout(){S={token:null,email:null,accounts:[],selected:null};localStorage.removeItem('talero_token');localStorage.removeItem('talero_email');route('landing');}
-
-function renderNav(){
-  if(S.token){
-    nav.innerHTML='';
-    nav.append($(`<span class="muted small">${S.email}</span>`));
-    const b=$(`<button class="btn btn-ghost btn-sm">Log out</button>`);b.onclick=logout;nav.append(b);
-  } else {
-    nav.innerHTML='';
-    const a=$(`<button class="btn btn-ghost btn-sm">Sign in</button>`);a.onclick=()=>route('auth','login');
-    const b=$(`<button class="btn btn-primary btn-sm">Open account</button>`);b.onclick=()=>route('auth','register');
-    nav.append(a,b);
-  }
-}
-
-/* ---------- views ---------- */
-function viewLanding(){
-  app.innerHTML='';
-  app.append($(`
-  <div class="wrap">
-    <section class="hero">
-      <span class="eyebrow">Futures & prediction markets</span>
-      <h1 class="big">Trade futures on a platform <span>built for serious traders</span></h1>
-      <p class="sub">Fast onboarding, instant funding options, and pro-grade risk tools — powered by NinjaTrader Clearing.</p>
-      <div class="cta">
-        <button class="btn btn-primary" id="get">Open your account</button>
-        <button class="btn btn-ghost" id="si">Sign in</button>
+<header class="site-head" id="siteHead">
+  <div class="head-inner">
+    <a class="brand" href="#top" aria-label="Talero home">
+      <svg class="brand-mark" viewBox="-1 -1 30 30" aria-hidden="true">
+        <defs><linearGradient id="brandGradH" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#84C0FF"/><stop offset="1" stop-color="#2E7FE0"/></linearGradient></defs>
+        <g fill="url(#brandGradH)">
+          <g transform="translate(0.039 0)"><path d="M 3.908 3.889 L 7.855 0 L 14.031 0 L 28.061 0 L 24.193 3.928 L 20.323 7.777 L 14.031 7.777 L 0 7.777 L 3.908 3.889 Z"/></g>
+          <g transform="translate(0 8.711)"><path d="M 2.892 16.45 L 19.346 0 L 14.461 0 L 8.285 0 L 0 8.225 L 0 19.289 L 0.957 18.375 L 2.892 16.45 Z"/></g>
+          <g transform="translate(20.284 8.711)"><path d="M 7.816 0 L 0 0 L 0 12.522 L 7.816 12.522 L 7.816 0 Z"/></g>
+        </g>
+      </svg>
+      <span class="brand-word"><b>Talero</b><small>FUTURES</small></span>
+    </a>
+    <nav class="head-nav" aria-label="Primary">
+      <div class="nav-dd">
+        <button class="nav-link nav-ddbtn" type="button" aria-haspopup="true" aria-expanded="false">Products <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="nav-menu" role="menu">
+          <a href="#markets" role="menuitem"><b>Futures</b><span>Equity index, energy, metals &amp; FX</span></a>
+          <a href="#" role="menuitem"><b>Prediction Markets</b><span>Trade on real-world events</span></a>
+        </div>
       </div>
-    </section>
-    <section class="features">
-      <div class="feat"><div class="ic">⚡</div><h3>Instant funding</h3><p>ACH, debit, and wire. Buying power estimated the moment funds route to clearing.</p></div>
-      <div class="feat"><div class="ic">🛡️</div><h3>Pro risk controls</h3><p>Per-account loss limits, trailing drawdown, and auto-liquidation built in.</p></div>
-      <div class="feat"><div class="ic">📈</div><h3>Real market access</h3><p>CME, NYMEX, COMEX futures plus micros — one account, one login.</p></div>
-    </section>
-    <p class="disc">Talero is a CFTC-registered introducing broker. Accounts are carried, cleared, and custodied by NinjaTrader Clearing, LLC. Talero does not accept or hold customer funds. Trading futures involves substantial risk of loss and is not suitable for everyone. This is a sandbox demo with simulated data.</p>
-  </div>`));
-  app.querySelector('#get').onclick=()=>route('auth','register');
-  app.querySelector('#si').onclick=()=>route('auth','login');
-}
-
-function viewAuth(mode='register'){
-  app.innerHTML='';
-  const card=$(`
-  <div class="wrap center"><div class="card auth">
-    <div class="tabs">
-      <div class="tab ${mode==='register'?'on':''}" data-m="register">Open account</div>
-      <div class="tab ${mode==='login'?'on':''}" data-m="login">Sign in</div>
+      <a class="nav-link" href="https://fintevo.com/" target="_blank" rel="noopener" onclick="return openFintevo()">Fintevo</a>
+      <a class="nav-link" href="#pricing">Pricing</a>
+      <a class="nav-link" href="#">Learn</a>
+      <a class="nav-link" href="#">Blog</a>
+      <a class="nav-link" href="#">Support</a>
+    </nav>
+    <div class="head-right">
+      <button class="globe" type="button" aria-label="Language"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.8 4 6.3 4 9s-1.4 6.2-4 9c-2.6-2.8-4-6.3-4-9s1.4-6.2 4-9Z"/></svg></button>
+      <span class="hr-div"></span>
+      <a class="nav-login" href="/auth#login">Log In</a>
+      <a class="btn-primary head-cta" href="/auth">Open Account</a>
+      <button class="burger" id="burger" type="button" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
     </div>
-    <div id="form"></div>
-    <div class="msg" id="m"></div>
-  </div></div>`);
-  app.append(card);
-  card.querySelectorAll('.tab').forEach(t=>t.onclick=()=>viewAuth(t.dataset.m));
-  const form=card.querySelector('#form');
-  if(mode==='register'){
-    form.innerHTML=`
-      <div class="row2"><div><label>First name</label><input id="fn" placeholder="Jordan"></div>
-      <div><label>Last name</label><input id="ln" placeholder="Castillo"></div></div>
-      <label>Email</label><input id="em" type="email" placeholder="you@email.com">
-      <label>Password</label><input id="pw" type="password" placeholder="Create a password">
-      <div style="height:16px"></div>
-      <button class="btn btn-primary" id="go" style="width:100%">Create account</button>
-      <p class="small muted" style="margin-top:12px">By continuing you agree this is a sandbox demo.</p>`;
-    form.querySelector('#go').onclick=async()=>{
-      const email=form.querySelector('#em').value.trim();
-      if(!email||!form.querySelector('#pw').value){return setMsg('Email and password required.','err');}
-      try{
-        setMsg('Creating account…','');
-        const r=await api('/app/register',{auth:false,method:'POST',body:{
-          email,password:form.querySelector('#pw').value,
-          firstName:form.querySelector('#fn').value,lastName:form.querySelector('#ln').value}});
-        setSession(r.sessionToken,email); route('dashboard');
-      }catch(e){setMsg(e.message,'err');}
-    };
-  } else {
-    form.innerHTML=`
-      <label>Email</label><input id="em" type="email" placeholder="you@email.com">
-      <label>Password</label><input id="pw" type="password" placeholder="Your password">
-      <div style="height:16px"></div>
-      <button class="btn btn-primary" id="go" style="width:100%">Sign in</button>
-      <p class="small muted" style="margin-top:12px">Try <b>jordan.castillo@example.com</b> (seeded demo trader).</p>`;
-    form.querySelector('#go').onclick=async()=>{
-      const email=form.querySelector('#em').value.trim();
-      if(!email){return setMsg('Enter your email.','err');}
-      try{
-        setMsg('Signing in…','');
-        const r=await api('/app/login',{auth:false,method:'POST',body:{email}});
-        setSession(r.sessionToken,email); route('dashboard');
-      }catch(e){setMsg(e.message,'err');}
-    };
-  }
-}
-function setMsg(t,k){const m=document.getElementById('m');if(m){m.textContent=t;m.className='msg '+(k||'');}}
+  </div>
+</header>
 
-async function viewDashboard(){
-  app.innerHTML='<div class="wrap dash"><p class="muted">Loading your accounts…</p></div>';
-  let me;
-  try{ me=await api('/app/me'); }catch(e){ logout(); return; }
-  // fetch balances for each account
-  const bundles=[];
-  for(const a of (me.accounts||[])){
-    try{ bundles.push(await api('/app/account?id='+a.id)); }
-    catch(_){ bundles.push({account:a,balance:null,positions:[],orders:[]}); }
-  }
-  S.accounts=bundles;
-  if(S.selected==null && bundles.length) S.selected=bundles[0].account.id;
-  renderDashboard(me);
-}
+<div class="mnav" id="mnav" aria-hidden="true">
+  <div class="mnav-scrim" data-close></div>
+  <div class="mnav-panel">
+    <div class="mnav-head">
+      <span class="brand-word"><b>Talero</b></span>
+      <button class="mnav-close" type="button" aria-label="Close menu" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <a class="mnav-link" href="#markets">Futures</a>
+    <a class="mnav-link" href="#">Prediction Markets</a>
+    <a class="mnav-link" href="https://fintevo.com/" target="_blank" rel="noopener" onclick="return openFintevo()">Fintevo</a>
+    <a class="mnav-link" href="#pricing">Pricing</a>
+    <a class="mnav-link" href="#">Learn</a>
+    <a class="mnav-link" href="#">Blog</a>
+    <a class="mnav-link" href="#">Support</a>
+    <a class="mnav-link" href="/auth#login">Log In</a>
+    <a class="btn-primary" href="/auth">Open Account</a>
+  </div>
+</div>
 
-function renderDashboard(me){
-  const b=S.accounts;
-  const totNet=b.reduce((s,x)=>s+(Number(x.balance&&x.balance.netLiq)||0),0);
-  const totCash=b.reduce((s,x)=>s+(Number(x.balance&&x.balance.cashBalance)||0),0);
-  const totOpen=b.reduce((s,x)=>s+(Number(x.balance&&x.balance.openPnL)||0),0);
-  app.innerHTML='';
-  const root=$(`<div class="wrap dash"></div>`);
-  root.append($(`
-    <div class="pagehead">
-      <div><div class="eyebrow" style="background:none;border:none;padding:0;color:#8fb6ff">Dashboard</div>
-      <h2>Welcome${me.user&&me.user.firstName?', '+me.user.firstName:''}</h2></div>
-      <button class="btn btn-primary btn-sm" id="open">+ Open new account</button>
-    </div>`));
-  root.append($(`
-    <div class="kpis">
-      <div class="kpi"><div class="l">Total net liquidity</div><div class="v">${fmt(totNet)}</div></div>
-      <div class="kpi"><div class="l">Total cash</div><div class="v">${fmt(totCash)}</div></div>
-      <div class="kpi"><div class="l">Open P&amp;L</div><div class="v ${totOpen>=0?'pos':'neg'}">${signed(totOpen)}</div></div>
-      <div class="kpi"><div class="l">Accounts</div><div class="v">${b.length}</div></div>
-    </div>`));
-  const grid=$(`<div class="grid2"></div>`);
-  const left=$(`<div></div>`);
-  if(!b.length) left.append($(`<div class="empty">No accounts yet. Click “Open new account”.</div>`));
-  b.forEach(x=>{
-    const a=x.account, bal=x.balance||{};
-    const el=$(`
-      <div class="acct ${a.id===S.selected?'on':''}">
-        <div class="top"><span class="nm">${a.nickname||a.name}</span>
-          <span class="pill ${a.state}">${String(a.state||'').replace('_',' ')}</span></div>
-        <div class="bal">${fmt(bal.netLiq)}</div>
-        <div class="sub">#${a.id} · ${a.legalStatus} · cash ${fmt(bal.cashBalance)}</div>
-      </div>`);
-    el.onclick=()=>{S.selected=a.id;renderDashboard(me);};
-    left.append(el);
-  });
-  grid.append(left);
+<main id="top">
 
-  const sel=b.find(x=>x.account.id===S.selected);
-  const right=$(`<div class="panel"></div>`);
-  if(!sel){ right.append($(`<div class="empty">Select an account.</div>`)); }
-  else{
-    const a=sel.account, bal=sel.balance||{};
-    right.append($(`
-      <div class="detail-head">
-        <div><div class="muted small">${a.nickname||a.name} · #${a.id}</div>
-        <div class="bignum">${fmt(bal.netLiq)}</div>
-        <div class="muted small">Net liquidity · <span class="${(Number(bal.openPnL)||0)>=0?'pos':'neg'}">${signed(bal.openPnL)} open</span></div></div>
-        <span class="pill ${a.state}">${String(a.state||'').replace('_',' ')}</span>
+  <!-- ================= HERO — scroll-scrub canvas ================= -->
+  <section class="hero-scroll" id="heroScroll" data-screen-label="Hero">
+    <div class="hero-sticky">
+      <canvas id="heroCanvas"></canvas>
+      <div class="hero-overlay">
+        <div class="hero-inner">
+          <span class="label hero-rise r1">Futures · Global Markets</span>
+          <h1 class="hero-rise r2">Trade with clarity.</h1>
+          <p class="hero-rise r3">Talero connects serious traders to global futures markets — with institutional execution, full support, and zero noise.</p>
+          <div class="hero-actions hero-rise r4">
+            <a class="btn-primary" href="/auth">Open an Account</a>
+            <a class="btn-secondary" href="#markets">Explore markets →</a>
+          </div>
+        </div>
       </div>
-      <div class="statrow">
-        <div class="s"><div class="l">Cash balance</div><div class="v">${fmt(bal.cashBalance)}</div></div>
-        <div class="s"><div class="l">Realized P&L</div><div class="v ${(Number(bal.realizedPnL)||0)>=0?'pos':'neg'}">${signed(bal.realizedPnL)}</div></div>
-        <div class="s"><div class="l">Available to trade</div><div class="v">${fmt(bal.availableForTrading)}</div></div>
-      </div>`));
-    const actions=$(`<div class="actions"></div>`);
-    const dep=$(`<button class="btn btn-green btn-sm">Deposit $5,000</button>`);
-    dep.onclick=()=>doDeposit(a.id,5000,me);
-    const sim=$(`<button class="btn btn-primary btn-sm">Simulate activity</button>`);
-    sim.onclick=()=>doSimulate(a.id,me);
-    actions.append(dep,sim);
-    right.append(actions);
+      <div class="scroll-hint"><span>Scroll</span><span class="bar"></span></div>
+    </div>
+  </section>
 
-    right.append($(`<div class="sectitle">Open positions</div>`));
-    if((sel.positions||[]).length){
-      const rows=sel.positions.map(p=>`<tr><td>${p.symbol}</td><td>${p.netPos}</td><td>${fmt(p.netPrice)}</td><td class="${(Number(p.openPnL)||0)>=0?'pos':'neg'}">${signed(p.openPnL)}</td></tr>`).join('');
-      right.append($(`<table><thead><tr><th>Symbol</th><th>Net</th><th>Avg price</th><th>Open P&L</th></tr></thead><tbody>${rows}</tbody></table>`));
-    } else right.append($(`<div class="empty">No open positions.</div>`));
+  <!-- ================= WHY TALERO ================= -->
+  <section class="section" id="why">
+    <div class="shell">
+      <div class="section-head reveal" data-reveal-group>
+        <span class="label reveal">Why traders choose us</span>
+        <h2 class="reveal">Built for the futures market. Built for you.</h2>
+      </div>
+      <div class="why-grid">
+        <article class="fcard reveal">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 9 11l4 4 8-8"/><path d="M14 7h7v7"/></svg></span>
+          <h3>Institutional Execution</h3>
+          <p>Direct market access with CME Group connectivity. Your orders move at the speed of the exchange — no last-look, no re-quotes.</p>
+        </article>
+        <article class="fcard reveal">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-3"/></svg></span>
+          <h3>Deep Liquidity</h3>
+          <p>Trade ES, NQ, CL, GC and FX futures with competitive spreads. Size up without moving the market.</p>
+        </article>
+        <article class="fcard reveal">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.6A8.4 8.4 0 1 1 21 11.5Z"/></svg></span>
+          <h3>Dedicated Desk Support</h3>
+          <p>A real futures desk, staffed by traders. Call, email, or message — we answer before the market opens and after it closes.</p>
+        </article>
+        <article class="fcard reveal">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.6 3.1 7.8 8 9 4.9-1.2 8-4.4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <h3>Regulated &amp; Transparent</h3>
+          <p>Talero operates under full regulatory oversight. Your funds are held in segregated accounts. No hidden fees, ever.</p>
+        </article>
+        <article class="fcard reveal">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+          <h3>Platform Flexibility</h3>
+          <p>Connect via NinjaTrader, Sierra Chart, or our FIX API. Trade the way you've always traded — we fit around your workflow.</p>
+        </article>
+        <article class="fcard reveal">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <h3>Global Market Hours</h3>
+          <p>Futures trade nearly 24 hours a day, 5 days a week. Talero keeps pace with every session — London open through CME close.</p>
+        </article>
+      </div>
+    </div>
+  </section>
 
-    right.append($(`<div class="sectitle">Recent orders</div>`));
-    if((sel.orders||[]).length){
-      const rows=sel.orders.slice(-8).reverse().map(o=>`<tr><td>${o.symbol}</td><td>${o.action}</td><td>${o.orderType}</td><td>${o.orderQty}</td><td>${o.ordStatus}</td><td>${o.avgFillPrice?fmt(o.avgFillPrice):'—'}</td></tr>`).join('');
-      right.append($(`<table><thead><tr><th>Symbol</th><th>Side</th><th>Type</th><th>Qty</th><th>Status</th><th>Fill</th></tr></thead><tbody>${rows}</tbody></table>`));
-    } else right.append($(`<div class="empty">No orders yet — hit “Simulate activity”.</div>`));
-  }
-  grid.append(right);
-  root.append(grid);
-  app.append(root);
-  root.querySelector('#open').onclick=()=>doOpen(me);
-}
+  <!-- ================= WHY FUTURES ================= -->
+  <section class="section adv" id="why-futures">
+    <div class="shell">
+      <div class="section-head reveal" data-reveal-group>
+        <span class="label reveal">Why futures</span>
+        <h2 class="reveal">An asset class built for active traders.</h2>
+        <p class="reveal">Futures offer a level of access, efficiency, and flexibility that few other markets can match.</p>
+      </div>
+      <div class="adv-grid">
+        <div class="adv-item reveal">
+          <image-slot id="advFutures1" class="adv-shot" shape="rounded" radius="10" placeholder="Drop a 4K image — global markets / city at night"></image-slot>
+          <h3>Nearly 24-hour access</h3>
+          <p>Futures trade almost around the clock, five days a week. Position yourself the moment news breaks — not when the bell rings.</p>
+        </div>
+        <div class="adv-item reveal">
+          <image-slot id="advFutures2" class="adv-shot" shape="rounded" radius="10" placeholder="Drop a 4K image — capital / vault / coins"></image-slot>
+          <h3>Capital efficiency</h3>
+          <p>Control a large notional position with a fraction of the capital. Margin requirements are a small share of contract value.</p>
+        </div>
+        <div class="adv-item reveal">
+          <image-slot id="advFutures3" class="adv-shot" shape="rounded" radius="10" placeholder="Drop a 4K image — rising &amp; falling charts"></image-slot>
+          <h3>Go long or short</h3>
+          <p>Take a position in either direction with equal ease. No borrowing, no short-sale restrictions — express any view on the market.</p>
+        </div>
+        <div class="adv-item reveal">
+          <image-slot id="advFutures4" class="adv-shot" shape="rounded" radius="10" placeholder="Drop a 4K image — tax documents / paperwork"></image-slot>
+          <h3>Potential tax advantages</h3>
+          <p>U.S. futures may qualify for 60/40 tax treatment under Section 1256.<sup>*</sup> Talero does not provide tax advice.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-async function doOpen(me){
-  const nickname=prompt('Account nickname?','My futures account');
-  if(nickname===null) return;
-  try{ const a=await api('/app/account/open',{method:'POST',body:{legalStatus:'Individual',nickname}});
-    toast('Account '+a.id+' opened (pending funding).'); S.selected=a.id; await viewDashboard();
-  }catch(e){toast(e.message);}
-}
-async function doDeposit(id,amount,me){
-  try{ await api('/app/account/deposit',{method:'POST',body:{accountId:id,amount}});
-    toast('Deposited '+fmt(amount)+' — account active.'); await viewDashboard();
-  }catch(e){toast(e.message);}
-}
-async function doSimulate(id,me){
-  try{ const r=await api('/app/account/simulate',{method:'POST',body:{accountId:id}});
-    const t=r.trade; toast(`${t.side} ${t.qty} ${t.symbol} @ ${fmt(t.price)} · realized ${signed(t.realized)}`);
-    await viewDashboard();
-  }catch(e){toast(e.message);}
-}
+  <!-- ================= MARKETS ================= -->
+  <section class="section" id="markets">
+    <div class="shell">
+      <div class="section-head reveal" data-reveal-group>
+        <span class="label reveal">Markets</span>
+        <h2 class="reveal">Where precision meets opportunity.</h2>
+        <p class="reveal">Access the world's most liquid futures markets through a single account.</p>
+      </div>
+      <div class="market-row">
+        <article class="mcard reveal">
+          <span class="msym">ES</span>
+          <span class="mname">E-mini S&amp;P 500</span>
+          <div class="mspecs">
+            <div class="mspec"><span>Exchange</span><span>CME</span></div>
+            <div class="mspec"><span>Tick</span><span>$12.50</span></div>
+            <div class="mspec"><span>Hours</span><span>Sun–Fri 23h</span></div>
+          </div>
+        </article>
+        <article class="mcard reveal">
+          <span class="msym">NQ</span>
+          <span class="mname">E-mini NASDAQ 100</span>
+          <div class="mspecs">
+            <div class="mspec"><span>Exchange</span><span>CME</span></div>
+            <div class="mspec"><span>Tick</span><span>$5.00</span></div>
+            <div class="mspec"><span>Hours</span><span>Sun–Fri 23h</span></div>
+          </div>
+        </article>
+        <article class="mcard reveal">
+          <span class="msym">CL</span>
+          <span class="mname">Crude Oil</span>
+          <div class="mspecs">
+            <div class="mspec"><span>Exchange</span><span>NYMEX</span></div>
+            <div class="mspec"><span>Tick</span><span>$10.00</span></div>
+            <div class="mspec"><span>Hours</span><span>Sun–Fri 23h</span></div>
+          </div>
+        </article>
+        <article class="mcard reveal">
+          <span class="msym">GC</span>
+          <span class="mname">Gold</span>
+          <div class="mspecs">
+            <div class="mspec"><span>Exchange</span><span>COMEX</span></div>
+            <div class="mspec"><span>Tick</span><span>$10.00</span></div>
+            <div class="mspec"><span>Hours</span><span>Sun–Fri 23h</span></div>
+          </div>
+        </article>
+        <article class="mcard reveal">
+          <span class="msym">6E</span>
+          <span class="mname">Euro FX</span>
+          <div class="mspecs">
+            <div class="mspec"><span>Exchange</span><span>CME</span></div>
+            <div class="mspec"><span>Tick</span><span>$6.25</span></div>
+            <div class="mspec"><span>Hours</span><span>Sun–Fri 23h</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
 
-/* ---------- router ---------- */
-function route(view,arg){
-  if(view==='auth'){ window.location.href = '/auth' + (arg==='login' ? '#login' : ''); return; }
-  if(view==='dashboard'){ window.location.href = '/dashboard'; return; }
-  renderNav(); return viewLanding();
-}
-window.addEventListener('DOMContentLoaded',()=>{ renderNav(); viewLanding(); });
+  <!-- ================= LOW MARGINS ================= -->
+  <section class="section margins" id="pricing">
+    <div class="shell">
+      <div class="section-head reveal" data-reveal-group>
+        <span class="label reveal">Low margins</span>
+        <h2 class="reveal">Trade more with less.</h2>
+        <p class="reveal">Day-trade margins among the lowest in the industry — so your capital works harder on every position.</p>
+      </div>
+      <div class="margin-tiers">
+        <article class="tier reveal">
+          <span class="tlabel">Micro contracts</span>
+          <div class="tprice"><span class="num">$50</span><span class="from">from / margin</span></div>
+          <p class="tsub">The same markets at one-tenth the size. Ideal for precise sizing, scaling in, and learning the futures market with limited capital.</p>
+          <div class="tsyms"><span class="tsym">MES</span><span class="tsym">MNQ</span><span class="tsym">MGC</span><span class="tsym">M2K</span><span class="tsym">MCL</span></div>
+        </article>
+        <article class="tier reveal">
+          <span class="tlabel">Mini contracts</span>
+          <div class="tprice"><span class="num">$500</span><span class="from">from / margin</span></div>
+          <p class="tsub">Full-size E-mini liquidity with day-trade margins built for active traders who need depth and tight spreads.</p>
+          <div class="tsyms"><span class="tsym">ES</span><span class="tsym">NQ</span><span class="tsym">CL</span><span class="tsym">GC</span><span class="tsym">6E</span></div>
+        </article>
+      </div>
+      <p class="margin-note reveal">Intraday margins shown are starting rates per contract, set by Talero's FCM partners and subject to change based on market volatility and account approval. Positions held overnight are subject to full exchange margin requirements.</p>
+    </div>
+  </section>
+
+  <!-- ================= FINTEVO PLATFORM ================= -->
+  <section class="section fintevo" id="fintevo">
+    <div class="shell">
+      <div class="fin-wrap">
+        <div class="fin-copy reveal" data-reveal-group>
+          <span class="label reveal">The platform</span>
+          <h2 class="reveal">Meet <em>Fintevo</em>.</h2>
+          <p class="reveal">A browser-based futures platform built around the way traders actually work. No software to install — just open, customize, and execute.</p>
+          <ul class="fin-feats reveal">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>Real-time data and professional-grade charting</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>Execute once, replicate across multiple accounts</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>Personal risk limits to protect your account</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>One customizable workspace for every market</li>
+          </ul>
+          <div class="fin-actions reveal">
+            <button class="btn-primary" type="button" onclick="openFintevo()">Launch Fintevo</button>
+            <a class="btn-ghost" href="https://fintevo.com/" target="_blank" rel="noopener" onclick="return openFintevo()">Open in new window ↗</a>
+          </div>
+        </div>
+        <div class="fin-mock reveal" role="img" aria-label="Fintevo trading platform preview">
+          <div class="fm-bar">
+            <span class="fm-dots"><i></i><i></i><i></i></span>
+            <span class="fm-url">app.fintevo.com</span>
+            <span class="fm-live"><i></i>Live</span>
+          </div>
+          <div class="fm-body">
+            <div class="fm-chart">
+              <div class="fm-sym"><b>ES</b><span class="nm">E-mini S&amp;P 500</span><span class="px">5,432.25 ▲</span></div>
+              <div class="fm-tabs"><span class="on">1m</span><span>5m</span><span>15m</span><span>1H</span><span>1D</span></div>
+              <div class="fm-graph">
+                <svg viewBox="0 0 320 180" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="finFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#4FA3FF" stop-opacity="0.34"/>
+                      <stop offset="1" stop-color="#4FA3FF" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,134 L20,124 L40,130 L60,108 L80,116 L100,94 L120,102 L140,82 L160,92 L180,70 L200,80 L220,58 L240,66 L260,48 L280,42 L300,52 L320,36 L320,180 L0,180 Z" fill="url(#finFill)"/>
+                  <path d="M0,134 L20,124 L40,130 L60,108 L80,116 L100,94 L120,102 L140,82 L160,92 L180,70 L200,80 L220,58 L240,66 L260,48 L280,42 L300,52 L320,36" fill="none" stroke="#4FA3FF" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="fm-ladder">
+              <div class="fm-lrow ask"><span class="sz">142</span><span class="pr">5433.00</span><span class="bar" style="width:55%"></span></div>
+              <div class="fm-lrow ask"><span class="sz">88</span><span class="pr">5432.75</span><span class="bar" style="width:34%"></span></div>
+              <div class="fm-lrow ask"><span class="sz">210</span><span class="pr">5432.50</span><span class="bar" style="width:82%"></span></div>
+              <div class="fm-lrow ask"><span class="sz">64</span><span class="pr">5432.25</span><span class="bar" style="width:26%"></span></div>
+              <div class="fm-spread">SPREAD · 1 TICK</div>
+              <div class="fm-lrow bid"><span class="bar" style="width:68%"></span><span class="pr">5432.00</span><span class="sz">176</span></div>
+              <div class="fm-lrow bid"><span class="bar" style="width:47%"></span><span class="pr">5431.75</span><span class="sz">120</span></div>
+              <div class="fm-lrow bid"><span class="bar" style="width:94%"></span><span class="pr">5431.50</span><span class="sz">240</span></div>
+              <div class="fm-lrow bid"><span class="bar" style="width:37%"></span><span class="pr">5431.25</span><span class="sz">95</span></div>
+            </div>
+          </div>
+          <div class="fm-pos"><span>Position <b>ES +2</b></span><span>Avg <b>5431.50</b></span><span class="pnl">P/L +$312.50</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="section" id="how">
+    <div class="shell">
+      <div class="section-head reveal" data-reveal-group>
+        <span class="label reveal">Getting started</span>
+        <h2 class="reveal">Three steps to the market.</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="num">01</div>
+          <h3>Open your account</h3>
+          <p>Complete our streamlined application online. Compliance is thorough, but fast — most accounts are approved within one business day.</p>
+        </div>
+        <div class="step reveal">
+          <div class="num">02</div>
+          <h3>Fund and configure</h3>
+          <p>Transfer funds to your segregated account and connect your preferred trading platform. Our onboarding desk guides you through every step.</p>
+        </div>
+        <div class="step reveal">
+          <div class="num">03</div>
+          <h3>Trade the markets</h3>
+          <p>Execute across CME, NYMEX, and COMEX futures with full platform support and a dedicated desk behind you.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CLOSING CTA ================= -->
+  <section class="closing" id="open">
+    <div class="inner reveal" data-reveal-group>
+      <span class="label reveal">Ready to trade</span>
+      <h2 class="reveal">A century of futures trading.<span class="l2">One account to access it.</span></h2>
+      <p class="sub reveal">Join traders who trust Talero for execution, support, and transparency in the global futures markets.</p>
+      <div class="closing-actions reveal">
+        <a class="btn-primary" href="/auth">Open an Account</a>
+        <a class="btn-secondary" href="/auth">Talk to our desk →</a>
+      </div>
+      <p class="finep reveal">Futures trading involves substantial risk of loss and is not appropriate for all investors.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="brand" href="#top" aria-label="Talero home">
+        <svg class="brand-mark" viewBox="-1 -1 30 30" aria-hidden="true">
+          <defs><linearGradient id="brandGradF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#84C0FF"/><stop offset="1" stop-color="#2E7FE0"/></linearGradient></defs>
+          <g fill="url(#brandGradF)">
+            <g transform="translate(0.039 0)"><path d="M 3.908 3.889 L 7.855 0 L 14.031 0 L 28.061 0 L 24.193 3.928 L 20.323 7.777 L 14.031 7.777 L 0 7.777 L 3.908 3.889 Z"/></g>
+            <g transform="translate(0 8.711)"><path d="M 2.892 16.45 L 19.346 0 L 14.461 0 L 8.285 0 L 0 8.225 L 0 19.289 L 0.957 18.375 L 2.892 16.45 Z"/></g>
+            <g transform="translate(20.284 8.711)"><path d="M 7.816 0 L 0 0 L 0 12.522 L 7.816 12.522 L 7.816 0 Z"/></g>
+          </g>
+        </svg>
+        <span class="brand-word"><b>Talero</b><small>BY MFB CAPITAL</small></span>
+      </a>
+      <p>Talero by MFB Capital connects serious traders to the world's top futures commission merchants, institutional-grade platforms, and dedicated support — all in one place.</p>
+      <div class="foot-addr">5800 Granite Parkway<br>Plano, TX 75024 · United States</div>
+      <div class="foot-social">
+        <a href="https://x.com/talerobrokerage" aria-label="X" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.8l-5-6.5L5.4 22H2.3l8.1-9.3L1.5 2h7l4.5 6 5.9-6Zm-2.4 18h1.7L7.6 3.8H5.8L16.5 20Z"/></svg></a>
+        <a href="https://www.linkedin.com/company/talero-brokerage" aria-label="LinkedIn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0 0-5ZM3 9h4v12H3V9Zm6 0h3.8v1.7h.1c.5-1 1.8-2 3.7-2 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21H9V9Z"/></svg></a>
+        <a href="https://www.instagram.com/talerobrokerage" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg></a>
+        <a href="https://www.youtube.com/channel/UCw0O2L3dLRhitmdubFr5hgA" aria-label="YouTube" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.4-.4-5a2.8 2.8 0 0 0-2-2C18.8 4.5 12 4.5 12 4.5s-6.8 0-8.6.5a2.8 2.8 0 0 0-2 2C1 8.6 1 12 1 12s0 3.4.4 5a2.8 2.8 0 0 0 2 2c1.8.5 8.6.5 8.6.5s6.8 0 8.6-.5a2.8 2.8 0 0 0 2-2c.4-1.6.4-5 .4-5ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg></a>
+      </div>
+    </div>
+    <div class="foot-discl">
+      <p><b style="color:var(--text-body)">Important regulatory information.</b> MFB Capital, LLC is an introducing broker registered with the Commodity Futures Trading Commission (CFTC) and a Member of the National Futures Association (NFA). We do not accept or hold customer funds; all customer accounts are carried and maintained by one or more Futures Commission Merchants (FCMs).</p>
+      <p><b style="color:var(--text-body)">Risk disclosure.</b> Trading futures and options on futures involves substantial risk of loss and is not suitable for all investors. You may lose all of your invested capital and may be required to deposit additional margin on short notice. Past performance is not indicative of future results.</p>
+      <p>Verify our registration status at <a href="https://www.nfa.futures.org/BasicNet/" target="_blank" rel="noopener">NFA BASIC</a>.</p>
+      <div class="foot-bottom">
+        <span>© 2026 MFB Capital, LLC. All rights reserved.</span>
+        <span class="legal"><a href="https://www.talero.com/privacy" target="_blank" rel="noopener">Privacy</a><a href="https://www.talero.com/terms" target="_blank" rel="noopener">Terms</a><a href="https://www.talero.com/risk-disclosure" target="_blank" rel="noopener">Risk Disclosure</a></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="web/image-slot.js"></script>
+<script src="web/talero-landing.js"></script>
+<script>
+  (function () {
+    var h = document.getElementById('siteHead');
+    function onScroll(){ if (window.scrollY > 40) h.classList.add('scrolled'); else h.classList.remove('scrolled'); }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // Fintevo trading platform — open in a centered popup window
+    window.openFintevo = function () {
+      var w = Math.min(1280, Math.round(screen.availWidth * 0.9));
+      var h = Math.min(860, Math.round(screen.availHeight * 0.9));
+      var dl = window.screenLeft != null ? window.screenLeft : screen.left;
+      var dt = window.screenTop != null ? window.screenTop : screen.top;
+      var left = dl + Math.max(0, (window.innerWidth - w) / 2);
+      var top = dt + Math.max(0, (window.innerHeight - h) / 2);
+      var win = window.open('https://fintevo.com/', 'fintevoPlatform',
+        'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes,noopener');
+      if (win) win.focus();
+      return false;
+    };
+
+    // Products dropdown (click for touch; hover handled by CSS)
+    var dd = document.querySelector('.nav-dd');
+    var ddBtn = dd && dd.querySelector('.nav-ddbtn');
+    if (ddBtn) {
+      ddBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var open = dd.classList.toggle('open');
+        ddBtn.setAttribute('aria-expanded', open);
+      });
+      document.addEventListener('click', function (e) { if (!dd.contains(e.target)) dd.classList.remove('open'); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') dd.classList.remove('open'); });
+    }
+
+    // Mobile drawer
+    var mnav = document.getElementById('mnav');
+    var burger = document.getElementById('burger');
+    function closeM(){ mnav.classList.remove('open'); document.body.style.overflow = ''; }
+    if (burger) burger.addEventListener('click', function () { mnav.classList.add('open'); document.body.style.overflow = 'hidden'; });
+    if (mnav) mnav.addEventListener('click', function (e) {
+      if (e.target.matches('[data-close]') || e.target.closest('.mnav-link') || e.target.closest('.btn-primary')) closeM();
+    });
+  })();
 </script>
 </body>
 </html>
