@@ -1,0 +1,8 @@
+node_modules/
+.env
+data/db.json
+service-account*.json
+talero-ninja-api-*.json
+*.iam.gserviceaccount.com.json
+*.log
+.DS_Store

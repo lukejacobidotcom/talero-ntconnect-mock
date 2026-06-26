@@ -1,0 +1,339 @@
+{
+  "_meta": {
+    "platform": "NT Connect (Tradovate-based partner API) — Talero mock clone",
+    "generated": "2026-06-25",
+    "environments": {
+      "live": "https://live.tradovateapi.com/v1",
+      "demo": "https://demo.tradovateapi.com/v1",
+      "marketData": "https://md.tradovateapi.com/v1",
+      "staging": "https://api.staging.ninjatrader.dev/v1",
+      "mock": "http://localhost:8787/v1"
+    },
+    "note": "This is a Talero-internal SANDBOX/MOCK that clones the NT Connect (Tradovate) /v1 contract for development before live partner credentials are issued. Not a real NinjaTrader system. Do not present to customers or regulators as a production brokerage backend."
+  },
+
+  "ApiKeys": [
+    {
+      "keyId": "key_8f3a91",
+      "label": "Talero Partner — DEMO/Sandbox",
+      "cid": 80432,
+      "appId": "Talero.NTConnect.Partner",
+      "appVersion": "1.0",
+      "apiKey": "ntc_demo_sk_9c1f4b7e2a6d05e3b8c4f17a0d29e6b5",
+      "orgAdminUser": "talero.partner.admin",
+      "orgAdminPassword": "T@lero-Sbx-2026!",
+      "organizationId": 5012,
+      "scopes": "users.read users.write accounting.read accounting.write risk.read risk.write funds.read funds.write applications.read applications.write marketdata.read",
+      "environment": "demo",
+      "status": "active",
+      "createdAt": "2026-06-25T13:00:00Z"
+    },
+    {
+      "keyId": "key_2b77c0",
+      "label": "Talero Partner — LIVE (placeholder, not yet enabled)",
+      "cid": 80433,
+      "appId": "Talero.NTConnect.Partner",
+      "appVersion": "1.0",
+      "apiKey": "ntc_live_sk_4d8e0a1c93f7b25e6017ac4d8b3f9e02",
+      "orgAdminUser": "talero.partner.admin",
+      "orgAdminPassword": "T@lero-Live-2026!",
+      "organizationId": 5012,
+      "scopes": "users.read accounting.read funds.read",
+      "environment": "live",
+      "status": "disabled",
+      "createdAt": "2026-06-25T13:00:00Z"
+    }
+  ],
+
+  "OrgUsers": [
+    {
+      "id": 700001,
+      "name": "talero.partner.admin",
+      "email": "ops@talero.markets",
+      "firstName": "Talero",
+      "lastName": "Operations",
+      "userStatus": "Active",
+      "organizationId": 5012,
+      "roles": "OrgAdmin",
+      "professionalStatus": "NonProfessional",
+      "timestamp": "2026-05-01T09:00:00Z"
+    },
+    {
+      "id": 700102,
+      "name": "jordan.castillo",
+      "email": "jordan.castillo@example.com",
+      "firstName": "Jordan",
+      "lastName": "Castillo",
+      "userStatus": "Active",
+      "organizationId": 5012,
+      "roles": "Trader",
+      "professionalStatus": "NonProfessional",
+      "timestamp": "2026-05-10T15:22:00Z"
+    },
+    {
+      "id": 700103,
+      "name": "castillo.capital",
+      "email": "ops@castillocapital.com",
+      "firstName": "Castillo",
+      "lastName": "Capital LLC",
+      "userStatus": "Active",
+      "organizationId": 5012,
+      "roles": "Trader",
+      "professionalStatus": "Professional",
+      "timestamp": "2026-05-18T11:05:00Z"
+    },
+    {
+      "id": 700104,
+      "name": "morgan.lee",
+      "email": "morgan.lee@example.com",
+      "firstName": "Morgan",
+      "lastName": "Lee",
+      "userStatus": "Active",
+      "organizationId": 5012,
+      "roles": "Trader",
+      "professionalStatus": "NonProfessional",
+      "timestamp": "2026-06-02T18:40:00Z"
+    },
+    {
+      "id": 700105,
+      "name": "priya.nair",
+      "email": "priya.nair@example.com",
+      "firstName": "Priya",
+      "lastName": "Nair",
+      "userStatus": "PendingApplication",
+      "organizationId": 5012,
+      "roles": "Trader",
+      "professionalStatus": "NonProfessional",
+      "timestamp": "2026-06-20T08:15:00Z"
+    }
+  ],
+
+  "Accounts": [
+    {
+      "id": 1912208,
+      "name": "TAL-1912208",
+      "userId": 700102,
+      "accountType": "Customer",
+      "active": true,
+      "clearingHouse": "NinjaTrader Clearing, LLC",
+      "riskCategoryId": 1,
+      "autoLiqProfileId": 2,
+      "marginAccountType": "Speculator",
+      "legalStatus": "Individual",
+      "archived": false,
+      "nickname": "Jordan — Individual",
+      "ownerEmail": "jordan.castillo@example.com",
+      "platformPassword": "Nt$9fK2pQ7w",
+      "state": "active",
+      "provisioning": "provisioned",
+      "primary": true,
+      "openedDate": "2026-05-12",
+      "timestamp": "2026-05-12T14:00:00Z"
+    },
+    {
+      "id": 1912240,
+      "name": "TAL-1912240",
+      "userId": 700103,
+      "accountType": "Customer",
+      "active": true,
+      "clearingHouse": "NinjaTrader Clearing, LLC",
+      "riskCategoryId": 2,
+      "autoLiqProfileId": 2,
+      "marginAccountType": "Speculator",
+      "legalStatus": "Entity",
+      "archived": false,
+      "nickname": "Castillo Capital LLC",
+      "ownerEmail": "ops@castillocapital.com",
+      "platformPassword": "Cc$4mP1xR8z",
+      "state": "active",
+      "provisioning": "provisioned",
+      "primary": false,
+      "openedDate": "2026-05-20",
+      "timestamp": "2026-05-20T16:30:00Z"
+    },
+    {
+      "id": 1912255,
+      "name": "TAL-1912255",
+      "userId": 700104,
+      "accountType": "Customer",
+      "active": false,
+      "clearingHouse": "NinjaTrader Clearing, LLC",
+      "riskCategoryId": 1,
+      "autoLiqProfileId": 2,
+      "marginAccountType": "Speculator",
+      "legalStatus": "IRA",
+      "archived": false,
+      "nickname": "Morgan — IRA (funding pending)",
+      "ownerEmail": "morgan.lee@example.com",
+      "platformPassword": "Ml$7nB3vT2k",
+      "state": "pending_funding",
+      "provisioning": "provisioned",
+      "primary": false,
+      "openedDate": "2026-06-03",
+      "timestamp": "2026-06-03T19:00:00Z"
+    },
+    {
+      "id": 9000001,
+      "name": "DEMO-9000001",
+      "userId": 700102,
+      "accountType": "Simulation",
+      "active": true,
+      "clearingHouse": "NinjaTrader (Sim)",
+      "riskCategoryId": 9,
+      "autoLiqProfileId": 9,
+      "marginAccountType": "Speculator",
+      "legalStatus": "Individual",
+      "archived": false,
+      "nickname": "Tournament Sim — $150k Max Net Liq",
+      "ownerEmail": "jordan.castillo@example.com",
+      "platformPassword": "SimD3mo!2026",
+      "state": "active",
+      "provisioning": "provisioned",
+      "primary": false,
+      "openedDate": "2026-06-15",
+      "timestamp": "2026-06-15T12:00:00Z"
+    },
+    {
+      "id": 1912301,
+      "name": "TAL-1912301",
+      "userId": 700105,
+      "accountType": "Customer",
+      "active": false,
+      "clearingHouse": "NinjaTrader Clearing, LLC",
+      "riskCategoryId": 1,
+      "autoLiqProfileId": 2,
+      "marginAccountType": "Speculator",
+      "legalStatus": "Individual",
+      "archived": false,
+      "nickname": "Priya — Individual (application under review)",
+      "ownerEmail": "priya.nair@example.com",
+      "platformPassword": "",
+      "state": "provisioning",
+      "provisioning": "awaiting_aop_approval",
+      "primary": false,
+      "openedDate": "2026-06-20",
+      "timestamp": "2026-06-20T08:20:00Z"
+    }
+  ],
+
+  "CashBalances": [
+    {
+      "id": 50001,
+      "accountId": 1912208,
+      "timestamp": "2026-06-24T21:00:00Z",
+      "tradeDate": {"year": 2026, "month": 6, "day": 24},
+      "currencyId": 1,
+      "cashBalance": 12640.55,
+      "realizedPnL": 312.40,
+      "weekRealizedPnL": 845.10,
+      "netLiq": 13180.20,
+      "openPnL": 539.65,
+      "totalCashValue": 12640.55,
+      "initialMargin": 1320.00,
+      "maintenanceMargin": 1200.00,
+      "availableForTrading": 11320.55
+    },
+    {
+      "id": 50002,
+      "accountId": 1912240,
+      "timestamp": "2026-06-24T21:00:00Z",
+      "tradeDate": {"year": 2026, "month": 6, "day": 24},
+      "currencyId": 1,
+      "cashBalance": 48200.00,
+      "realizedPnL": 1180.00,
+      "weekRealizedPnL": 2640.00,
+      "netLiq": 49715.40,
+      "openPnL": 1515.40,
+      "totalCashValue": 48200.00,
+      "initialMargin": 5280.00,
+      "maintenanceMargin": 4800.00,
+      "availableForTrading": 42920.00
+    },
+    {
+      "id": 50003,
+      "accountId": 1912255,
+      "timestamp": "2026-06-24T21:00:00Z",
+      "tradeDate": {"year": 2026, "month": 6, "day": 24},
+      "currencyId": 1,
+      "cashBalance": 0.00,
+      "realizedPnL": 0.00,
+      "weekRealizedPnL": 0.00,
+      "netLiq": 0.00,
+      "openPnL": 0.00,
+      "totalCashValue": 0.00,
+      "initialMargin": 0.00,
+      "maintenanceMargin": 0.00,
+      "availableForTrading": 0.00
+    },
+    {
+      "id": 50004,
+      "accountId": 9000001,
+      "timestamp": "2026-06-24T21:00:00Z",
+      "tradeDate": {"year": 2026, "month": 6, "day": 24},
+      "currencyId": 1,
+      "cashBalance": 150000.00,
+      "realizedPnL": -420.00,
+      "weekRealizedPnL": 2310.00,
+      "netLiq": 151890.00,
+      "openPnL": 2310.00,
+      "totalCashValue": 150000.00,
+      "initialMargin": 3960.00,
+      "maintenanceMargin": 3600.00,
+      "availableForTrading": 146040.00
+    }
+  ],
+
+  "Positions": [
+    {"id": 60001, "accountId": 1912208, "contractId": 2001, "symbol": "MESU6", "netPos": 3, "netPrice": 5512.25, "bought": 3, "boughtValue": 82683.75, "sold": 0, "soldValue": 0, "prevPos": 0, "openPnL": 539.65, "timestamp": "2026-06-24T20:55:00Z"},
+    {"id": 60002, "accountId": 1912240, "contractId": 1001, "symbol": "ESU6", "netPos": 2, "netPrice": 5510.00, "bought": 2, "boughtValue": 551000.00, "sold": 0, "soldValue": 0, "prevPos": 0, "openPnL": 1515.40, "timestamp": "2026-06-24T20:55:00Z"},
+    {"id": 60003, "accountId": 9000001, "contractId": 1002, "symbol": "NQU6", "netPos": -1, "netPrice": 19840.50, "bought": 0, "boughtValue": 0, "sold": 1, "soldValue": 396810.00, "prevPos": 0, "openPnL": 2310.00, "timestamp": "2026-06-24T20:55:00Z"}
+  ],
+
+  "Orders": [
+    {"id": 70001, "accountId": 1912208, "contractId": 2001, "symbol": "MESU6", "action": "Buy", "orderType": "Limit", "orderQty": 3, "price": 5511.00, "ordStatus": "Filled", "filledQty": 3, "avgFillPrice": 5512.25, "timestamp": "2026-06-24T14:32:11Z"},
+    {"id": 70002, "accountId": 1912240, "contractId": 1001, "symbol": "ESU6", "action": "Buy", "orderType": "Market", "orderQty": 2, "price": null, "ordStatus": "Filled", "filledQty": 2, "avgFillPrice": 5510.00, "timestamp": "2026-06-24T13:05:48Z"},
+    {"id": 70003, "accountId": 1912208, "contractId": 2001, "symbol": "MESU6", "action": "Sell", "orderType": "Stop", "orderQty": 3, "price": 5495.00, "ordStatus": "Working", "filledQty": 0, "avgFillPrice": null, "timestamp": "2026-06-24T14:33:02Z"},
+    {"id": 70004, "accountId": 9000001, "contractId": 1002, "symbol": "NQU6", "action": "Sell", "orderType": "Limit", "orderQty": 1, "price": 19840.50, "ordStatus": "Filled", "filledQty": 1, "avgFillPrice": 19840.50, "timestamp": "2026-06-24T10:11:30Z"}
+  ],
+
+  "Funds": [
+    {"id": 80001, "accountId": 1912208, "type": "deposit", "method": "ACH (Plaid)", "amount": 10000.00, "currency": "USD", "status": "settled", "reference": "ACH-2026-0512-1912208", "createdAt": "2026-05-12T15:00:00Z", "settledAt": "2026-05-14T15:00:00Z", "destinationOfRecord": "NinjaTrader Clearing, LLC"},
+    {"id": 80002, "accountId": 1912208, "type": "deposit", "method": "Debit Card (Stripe)", "amount": 2500.00, "currency": "USD", "status": "settled", "reference": "DBT-2026-0601-1912208", "createdAt": "2026-06-01T17:20:00Z", "settledAt": "2026-06-01T17:21:00Z", "destinationOfRecord": "NinjaTrader Clearing, LLC"},
+    {"id": 80003, "accountId": 1912240, "type": "deposit", "method": "Wire", "amount": 47000.00, "currency": "USD", "status": "settled", "reference": "WIRE-2026-0520-1912240", "createdAt": "2026-05-20T16:00:00Z", "settledAt": "2026-05-21T16:00:00Z", "destinationOfRecord": "NinjaTrader Clearing, LLC"},
+    {"id": 80004, "accountId": 1912240, "type": "withdrawal", "method": "ACH (return-to-originator)", "amount": 5000.00, "currency": "USD", "status": "pending_review", "reference": "WD-2026-0623-1912240", "createdAt": "2026-06-23T19:30:00Z", "settledAt": null, "destinationOfRecord": "NinjaTrader Clearing, LLC"}
+  ],
+
+  "CustomerApplications": [
+    {"id": 90001, "applicantEmail": "jordan.castillo@example.com", "legalStatus": "Individual", "status": "Approved", "submittedAt": "2026-05-10T15:30:00Z", "decisionAt": "2026-05-12T13:45:00Z", "documentsRequired": "", "accountIdIssued": 1912208, "method": "NT AOP API"},
+    {"id": 90002, "applicantEmail": "ops@castillocapital.com", "legalStatus": "Entity", "status": "Approved", "submittedAt": "2026-05-18T11:10:00Z", "decisionAt": "2026-05-20T15:50:00Z", "documentsRequired": "", "accountIdIssued": 1912240, "method": "NT AOP API"},
+    {"id": 90003, "applicantEmail": "priya.nair@example.com", "legalStatus": "Individual", "status": "DocumentsRequired", "submittedAt": "2026-06-20T08:15:00Z", "decisionAt": null, "documentsRequired": "Proof of address (<90 days); W-8BEN (non-US resident)", "accountIdIssued": null, "method": "NT AOP API"},
+    {"id": 90004, "applicantEmail": "morgan.lee@example.com", "legalStatus": "IRA", "status": "ConditionallyApproved", "submittedAt": "2026-06-02T18:45:00Z", "decisionAt": "2026-06-03T18:55:00Z", "documentsRequired": "Initial funding to activate", "accountIdIssued": 1912255, "method": "NT AOP API"}
+  ],
+
+  "RiskSettings": [
+    {"id": 11001, "accountId": 1912208, "riskCategoryId": 1, "maxPosition": 10, "maxOrderQty": 5, "dailyLossLimit": 1500.00, "trailingDrawdown": 2500.00, "autoLiqLevel": 1100.00, "halted": false, "scope": "account"},
+    {"id": 11002, "accountId": 1912240, "riskCategoryId": 2, "maxPosition": 25, "maxOrderQty": 10, "dailyLossLimit": 6000.00, "trailingDrawdown": 10000.00, "autoLiqLevel": 4500.00, "halted": false, "scope": "account"},
+    {"id": 11003, "accountId": 9000001, "riskCategoryId": 9, "maxPosition": 50, "maxOrderQty": 20, "dailyLossLimit": 7500.00, "trailingDrawdown": 12000.00, "autoLiqLevel": 3500.00, "halted": false, "scope": "account"}
+  ],
+
+  "Contracts": [
+    {"id": 1001, "name": "ESU6", "productId": 10, "productType": "Future", "exchange": "CME", "description": "E-mini S&P 500 Sep 2026", "tickSize": 0.25, "tickValue": 12.50, "currency": "USD", "expiration": "2026-09-18", "status": "Active"},
+    {"id": 1002, "name": "NQU6", "productId": 11, "productType": "Future", "exchange": "CME", "description": "E-mini Nasdaq-100 Sep 2026", "tickSize": 0.25, "tickValue": 5.00, "currency": "USD", "expiration": "2026-09-18", "status": "Active"},
+    {"id": 2001, "name": "MESU6", "productId": 12, "productType": "Future", "exchange": "CME", "description": "Micro E-mini S&P 500 Sep 2026", "tickSize": 0.25, "tickValue": 1.25, "currency": "USD", "expiration": "2026-09-18", "status": "Active"},
+    {"id": 2002, "name": "MNQU6", "productId": 13, "productType": "Future", "exchange": "CME", "description": "Micro E-mini Nasdaq-100 Sep 2026", "tickSize": 0.25, "tickValue": 0.50, "currency": "USD", "expiration": "2026-09-18", "status": "Active"},
+    {"id": 3001, "name": "CLN6", "productId": 14, "productType": "Future", "exchange": "NYMEX", "description": "Crude Oil Jul 2026", "tickSize": 0.01, "tickValue": 10.00, "currency": "USD", "expiration": "2026-06-22", "status": "Active"},
+    {"id": 3002, "name": "GCQ6", "productId": 15, "productType": "Future", "exchange": "COMEX", "description": "Gold Aug 2026", "tickSize": 0.10, "tickValue": 10.00, "currency": "USD", "expiration": "2026-08-27", "status": "Active"}
+  ],
+
+  "Fees": [
+    {"id": 12001, "accountId": 1912208, "type": "MarketData", "description": "CME Non-Pro Real-Time bundle", "amount": 12.00, "currency": "USD", "periodStart": "2026-06-01", "periodEnd": "2026-06-30", "status": "billed"},
+    {"id": 12002, "accountId": 1912240, "type": "MarketData", "description": "CME Pro Real-Time bundle", "amount": 105.00, "currency": "USD", "periodStart": "2026-06-01", "periodEnd": "2026-06-30", "status": "billed"},
+    {"id": 12003, "accountId": 1912208, "type": "Commission", "description": "Per-side commission accrual (June)", "amount": 38.40, "currency": "USD", "periodStart": "2026-06-01", "periodEnd": "2026-06-30", "status": "accruing"}
+  ],
+
+  "Alerts": [
+    {"id": 13001, "accountId": 1912240, "category": "Funding", "severity": "info", "message": "Withdrawal WD-2026-0623-1912240 submitted; pending Treasury review.", "status": "open", "createdAt": "2026-06-23T19:30:00Z"},
+    {"id": 13002, "accountId": 1912255, "category": "Onboarding", "severity": "warning", "message": "Account provisioned but not funded; trading disabled until initial deposit settles.", "status": "open", "createdAt": "2026-06-03T19:05:00Z"},
+    {"id": 13003, "accountId": 1912301, "category": "Application", "severity": "warning", "message": "AOP application 90003 requires documents: proof of address, W-8BEN.", "status": "open", "createdAt": "2026-06-20T08:20:00Z"}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "talero-ntconnect-mock",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Talero sandbox that clones the NT Connect (Tradovate-based) /v1 partner API, backed by Google Sheets or a local JSON store.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "reset": "node scripts/reset.js",
+    "smoke": "bash scripts/smoke_test.sh"
+  },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}

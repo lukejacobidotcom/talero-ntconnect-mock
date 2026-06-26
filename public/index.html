@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Talero Markets — Futures, simplified</title>
+<style>
+  :root{
+    --bg:#0a1626; --panel:#0f2236; --panel2:#102842; --line:#1d3450;
+    --navy:#0B1F3A; --blue:#2f6fed; --blueDk:#1b4fc2; --green:#1f9d57;
+    --red:#e5484d; --text:#e8eef6; --muted:#93a4ba; --gold:#d9a441;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 70% -10%, #15314f 0%, var(--bg) 55%);
+    color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;min-height:100vh}
+  a{color:var(--blue);text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  /* top nav */
+  header{position:sticky;top:0;z-index:20;background:rgba(10,22,38,.82);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px;font-size:19px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--blue),#7db1ff);
+    display:grid;place-items:center;color:#06122a;font-weight:900;font-size:18px}
+  .navlinks{display:flex;gap:8px;align-items:center}
+  .btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:#36567c}
+  .btn-primary{background:linear-gradient(135deg,var(--blue),var(--blueDk));color:#fff}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-green{background:linear-gradient(135deg,#21a85e,#147a40);color:#fff}
+  .btn-sm{padding:7px 12px;font-size:13px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  /* hero */
+  .hero{padding:74px 0 40px;text-align:center}
+  .eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    color:#8fb6ff;background:rgba(47,111,237,.12);border:1px solid rgba(47,111,237,.3);padding:6px 12px;border-radius:99px}
+  h1.big{font-size:48px;line-height:1.07;margin:20px auto 14px;max-width:760px;letter-spacing:-1px}
+  h1.big span{background:linear-gradient(120deg,#7db1ff,#c8b3ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);font-size:18px;max-width:600px;margin:0 auto 26px;line-height:1.5}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:54px 0}
+  .feat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .feat h3{margin:8px 0 6px;font-size:16px}
+  .feat p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+  .feat .ic{width:38px;height:38px;border-radius:10px;background:var(--panel2);display:grid;place-items:center;font-size:20px}
+  .disc{color:#6c7e95;font-size:12px;text-align:center;line-height:1.6;border-top:1px solid var(--line);padding:24px 0 40px;margin-top:30px}
+  /* auth */
+  .center{min-height:calc(100vh - 62px);display:grid;place-items:center;padding:40px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  .auth{width:420px;max-width:100%}
+  .tabs{display:flex;background:var(--panel2);border-radius:10px;padding:4px;margin-bottom:20px}
+  .tab{flex:1;text-align:center;padding:9px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;color:var(--muted)}
+  .tab.on{background:var(--blue);color:#fff}
+  label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px;font-weight:600}
+  input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 12px;
+    color:var(--text);font-size:14px;outline:none}
+  input:focus,select:focus{border-color:var(--blue)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .msg{font-size:13px;margin-top:12px;min-height:18px}
+  .msg.err{color:var(--red)} .msg.ok{color:var(--green)}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  /* dashboard */
+  .dash{padding:26px 0 60px}
+  .pagehead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+  .pagehead h2{margin:0;font-size:24px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+  .kpi .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px}
+  .kpi .v{font-size:24px;font-weight:800;margin-top:6px}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+  .grid2{display:grid;grid-template-columns:340px 1fr;gap:18px}
+  .acct{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
+  .acct:hover{border-color:#36567c}
+  .acct.on{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset}
+  .acct .top{display:flex;justify-content:space-between;align-items:center}
+  .acct .nm{font-weight:700}
+  .pill{font-size:11px;padding:3px 9px;border-radius:99px;font-weight:700;text-transform:capitalize}
+  .pill.active{background:rgba(31,157,87,.16);color:#54d98c}
+  .pill.pending_funding,.pill.provisioning{background:rgba(217,164,65,.16);color:var(--gold)}
+  .acct .bal{margin-top:8px;font-size:20px;font-weight:800}
+  .acct .sub{color:var(--muted);font-size:12px;margin-top:2px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .bignum{font-size:34px;font-weight:850;letter-spacing:-.5px}
+  .statrow{display:flex;gap:26px;margin:14px 0 18px;flex-wrap:wrap}
+  .statrow .s .l{color:var(--muted);font-size:12px}
+  .statrow .s .v{font-weight:700;font-size:17px;margin-top:2px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{text-align:left;padding:9px 10px;font-size:13px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+  .sectitle{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:20px 0 4px;font-weight:700}
+  .empty{color:var(--muted);font-size:13px;padding:14px 0}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#12325a;border:1px solid #2f6fed;
+    color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;z-index:50;max-width:90%}
+  .toast.show{opacity:1}
+  .sandbox{background:rgba(217,164,65,.1);border:1px solid rgba(217,164,65,.35);color:var(--gold);
+    font-size:12px;text-align:center;padding:7px}
+  @media(max-width:820px){.features{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}h1.big{font-size:34px}}
+</style>
+</head>
+<body>
+<div class="sandbox">SANDBOX — demo environment on the Talero NT Connect mock. Not a live brokerage. Dummy data only.</div>
+<header><div class="wrap nav">
+  <div class="brand"><div class="logo">T</div> Talero<span class="muted" style="font-weight:600">Markets</span></div>
+  <div class="navlinks" id="nav"></div>
+</div></header>
+
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = ''; // same origin
+let S = { token: localStorage.getItem('talero_token') || null,
+          email: localStorage.getItem('talero_email') || null,
+          accounts: [], selected: null };
+
+const $ = (h)=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstChild;};
+const app = document.getElementById('app');
+const nav = document.getElementById('nav');
+const fmt = (n)=> (n==null||isNaN(n))?'—':'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const signed = (n)=>{n=Number(n)||0;return (n>=0?'+':'')+fmt(n);};
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200);}
+
+async function api(path, {method='GET', body=null, auth=true}={}){
+  const headers={};
+  if(body) headers['Content-Type']='application/json';
+  if(auth && S.token) headers['Authorization']='Bearer '+S.token;
+  const r = await fetch(API+path,{method,headers,body:body?JSON.stringify(body):undefined});
+  let data={}; try{data=await r.json();}catch(_){}
+  if(!r.ok || data.errorText) throw new Error(data.errorText||('HTTP '+r.status));
+  return data;
+}
+function setSession(t,email){S.token=t;S.email=email;localStorage.setItem('talero_token',t);localStorage.setItem('talero_email',email);}
+function logout(){S={token:null,email:null,accounts:[],selected:null};localStorage.removeItem('talero_token');localStorage.removeItem('talero_email');route('landing');}
+
+function renderNav(){
+  if(S.token){
+    nav.innerHTML='';
+    nav.append($(`<span class="muted small">${S.email}</span>`));
+    const b=$(`<button class="btn btn-ghost btn-sm">Log out</button>`);b.onclick=logout;nav.append(b);
+  } else {
+    nav.innerHTML='';
+    const a=$(`<button class="btn btn-ghost btn-sm">Sign in</button>`);a.onclick=()=>route('auth','login');
+    const b=$(`<button class="btn btn-primary btn-sm">Open account</button>`);b.onclick=()=>route('auth','register');
+    nav.append(a,b);
+  }
+}
+
+/* ---------- views ---------- */
+function viewLanding(){
+  app.innerHTML='';
+  app.append($(`
+  <div class="wrap">
+    <section class="hero">
+      <span class="eyebrow">Futures & prediction markets</span>
+      <h1 class="big">Trade futures on a platform <span>built for serious traders</span></h1>
+      <p class="sub">Fast onboarding, instant funding options, and pro-grade risk tools — powered by NinjaTrader Clearing.</p>
+      <div class="cta">
+        <button class="btn btn-primary" id="get">Open your account</button>
+        <button class="btn btn-ghost" id="si">Sign in</button>
+      </div>
+    </section>
+    <section class="features">
+      <div class="feat"><div class="ic">⚡</div><h3>Instant funding</h3><p>ACH, debit, and wire. Buying power estimated the moment funds route to clearing.</p></div>
+      <div class="feat"><div class="ic">🛡️</div><h3>Pro risk controls</h3><p>Per-account loss limits, trailing drawdown, and auto-liquidation built in.</p></div>
+      <div class="feat"><div class="ic">📈</div><h3>Real market access</h3><p>CME, NYMEX, COMEX futures plus micros — one account, one login.</p></div>
+    </section>
+    <p class="disc">Talero is a CFTC-registered introducing broker. Accounts are carried, cleared, and custodied by NinjaTrader Clearing, LLC. Talero does not accept or hold customer funds. Trading futures involves substantial risk of loss and is not suitable for everyone. This is a sandbox demo with simulated data.</p>
+  </div>`));
+  app.querySelector('#get').onclick=()=>route('auth','register');
+  app.querySelector('#si').onclick=()=>route('auth','login');
+}
+
+function viewAuth(mode='register'){
+  app.innerHTML='';
+  const card=$(`
+  <div class="wrap center"><div class="card auth">
+    <div class="tabs">
+      <div class="tab ${mode==='register'?'on':''}" data-m="register">Open account</div>
+      <div class="tab ${mode==='login'?'on':''}" data-m="login">Sign in</div>
+    </div>
+    <div id="form"></div>
+    <div class="msg" id="m"></div>
+  </div></div>`);
+  app.append(card);
+  card.querySelectorAll('.tab').forEach(t=>t.onclick=()=>viewAuth(t.dataset.m));
+  const form=card.querySelector('#form');
+  if(mode==='register'){
+    form.innerHTML=`
+      <div class="row2"><div><label>First name</label><input id="fn" placeholder="Jordan"></div>
+      <div><label>Last name</label><input id="ln" placeholder="Castillo"></div></div>
+      <label>Email</label><input id="em" type="email" placeholder="you@email.com">
+      <label>Password</label><input id="pw" type="password" placeholder="Create a password">
+      <div style="height:16px"></div>
+      <button class="btn btn-primary" id="go" style="width:100%">Create account</button>
+      <p class="small muted" style="margin-top:12px">By continuing you agree this is a sandbox demo.</p>`;
+    form.querySelector('#go').onclick=async()=>{
+      const email=form.querySelector('#em').value.trim();
+      if(!email||!form.querySelector('#pw').value){return setMsg('Email and password required.','err');}
+      try{
+        setMsg('Creating account…','');
+        const r=await api('/app/register',{auth:false,method:'POST',body:{
+          email,password:form.querySelector('#pw').value,
+          firstName:form.querySelector('#fn').value,lastName:form.querySelector('#ln').value}});
+        setSession(r.sessionToken,email); route('dashboard');
+      }catch(e){setMsg(e.message,'err');}
+    };
+  } else {
+    form.innerHTML=`
+      <label>Email</label><input id="em" type="email" placeholder="you@email.com">
+      <label>Password</label><input id="pw" type="password" placeholder="Your password">
+      <div style="height:16px"></div>
+      <button class="btn btn-primary" id="go" style="width:100%">Sign in</button>
+      <p class="small muted" style="margin-top:12px">Try <b>jordan.castillo@example.com</b> (seeded demo trader).</p>`;
+    form.querySelector('#go').onclick=async()=>{
+      const email=form.querySelector('#em').value.trim();
+      if(!email){return setMsg('Enter your email.','err');}
+      try{
+        setMsg('Signing in…','');
+        const r=await api('/app/login',{auth:false,method:'POST',body:{email}});
+        setSession(r.sessionToken,email); route('dashboard');
+      }catch(e){setMsg(e.message,'err');}
+    };
+  }
+}
+function setMsg(t,k){const m=document.getElementById('m');if(m){m.textContent=t;m.className='msg '+(k||'');}}
+
+async function viewDashboard(){
+  app.innerHTML='<div class="wrap dash"><p class="muted">Loading your accounts…</p></div>';
+  let me;
+  try{ me=await api('/app/me'); }catch(e){ logout(); return; }
+  // fetch balances for each account
+  const bundles=[];
+  for(const a of (me.accounts||[])){
+    try{ bundles.push(await api('/app/account?id='+a.id)); }
+    catch(_){ bundles.push({account:a,balance:null,positions:[],orders:[]}); }
+  }
+  S.accounts=bundles;
+  if(S.selected==null && bundles.length) S.selected=bundles[0].account.id;
+  renderDashboard(me);
+}
+
+function renderDashboard(me){
+  const b=S.accounts;
+  const totNet=b.reduce((s,x)=>s+(Number(x.balance&&x.balance.netLiq)||0),0);
+  const totCash=b.reduce((s,x)=>s+(Number(x.balance&&x.balance.cashBalance)||0),0);
+  const totOpen=b.reduce((s,x)=>s+(Number(x.balance&&x.balance.openPnL)||0),0);
+  app.innerHTML='';
+  const root=$(`<div class="wrap dash"></div>`);
+  root.append($(`
+    <div class="pagehead">
+      <div><div class="eyebrow" style="background:none;border:none;padding:0;color:#8fb6ff">Dashboard</div>
+      <h2>Welcome${me.user&&me.user.firstName?', '+me.user.firstName:''}</h2></div>
+      <button class="btn btn-primary btn-sm" id="open">+ Open new account</button>
+    </div>`));
+  root.append($(`
+    <div class="kpis">
+      <div class="kpi"><div class="l">Total net liquidity</div><div class="v">${fmt(totNet)}</div></div>
+      <div class="kpi"><div class="l">Total cash</div><div class="v">${fmt(totCash)}</div></div>
+      <div class="kpi"><div class="l">Open P&amp;L</div><div class="v ${totOpen>=0?'pos':'neg'}">${signed(totOpen)}</div></div>
+      <div class="kpi"><div class="l">Accounts</div><div class="v">${b.length}</div></div>
+    </div>`));
+  const grid=$(`<div class="grid2"></div>`);
+  const left=$(`<div></div>`);
+  if(!b.length) left.append($(`<div class="empty">No accounts yet. Click “Open new account”.</div>`));
+  b.forEach(x=>{
+    const a=x.account, bal=x.balance||{};
+    const el=$(`
+      <div class="acct ${a.id===S.selected?'on':''}">
+        <div class="top"><span class="nm">${a.nickname||a.name}</span>
+          <span class="pill ${a.state}">${String(a.state||'').replace('_',' ')}</span></div>
+        <div class="bal">${fmt(bal.netLiq)}</div>
+        <div class="sub">#${a.id} · ${a.legalStatus} · cash ${fmt(bal.cashBalance)}</div>
+      </div>`);
+    el.onclick=()=>{S.selected=a.id;renderDashboard(me);};
+    left.append(el);
+  });
+  grid.append(left);
+
+  const sel=b.find(x=>x.account.id===S.selected);
+  const right=$(`<div class="panel"></div>`);
+  if(!sel){ right.append($(`<div class="empty">Select an account.</div>`)); }
+  else{
+    const a=sel.account, bal=sel.balance||{};
+    right.append($(`
+      <div class="detail-head">
+        <div><div class="muted small">${a.nickname||a.name} · #${a.id}</div>
+        <div class="bignum">${fmt(bal.netLiq)}</div>
+        <div class="muted small">Net liquidity · <span class="${(Number(bal.openPnL)||0)>=0?'pos':'neg'}">${signed(bal.openPnL)} open</span></div></div>
+        <span class="pill ${a.state}">${String(a.state||'').replace('_',' ')}</span>
+      </div>
+      <div class="statrow">
+        <div class="s"><div class="l">Cash balance</div><div class="v">${fmt(bal.cashBalance)}</div></div>
+        <div class="s"><div class="l">Realized P&L</div><div class="v ${(Number(bal.realizedPnL)||0)>=0?'pos':'neg'}">${signed(bal.realizedPnL)}</div></div>
+        <div class="s"><div class="l">Available to trade</div><div class="v">${fmt(bal.availableForTrading)}</div></div>
+      </div>`));
+    const actions=$(`<div class="actions"></div>`);
+    const dep=$(`<button class="btn btn-green btn-sm">Deposit $5,000</button>`);
+    dep.onclick=()=>doDeposit(a.id,5000,me);
+    const sim=$(`<button class="btn btn-primary btn-sm">Simulate activity</button>`);
+    sim.onclick=()=>doSimulate(a.id,me);
+    actions.append(dep,sim);
+    right.append(actions);
+
+    right.append($(`<div class="sectitle">Open positions</div>`));
+    if((sel.positions||[]).length){
+      const rows=sel.positions.map(p=>`<tr><td>${p.symbol}</td><td>${p.netPos}</td><td>${fmt(p.netPrice)}</td><td class="${(Number(p.openPnL)||0)>=0?'pos':'neg'}">${signed(p.openPnL)}</td></tr>`).join('');
+      right.append($(`<table><thead><tr><th>Symbol</th><th>Net</th><th>Avg price</th><th>Open P&L</th></tr></thead><tbody>${rows}</tbody></table>`));
+    } else right.append($(`<div class="empty">No open positions.</div>`));
+
+    right.append($(`<div class="sectitle">Recent orders</div>`));
+    if((sel.orders||[]).length){
+      const rows=sel.orders.slice(-8).reverse().map(o=>`<tr><td>${o.symbol}</td><td>${o.action}</td><td>${o.orderType}</td><td>${o.orderQty}</td><td>${o.ordStatus}</td><td>${o.avgFillPrice?fmt(o.avgFillPrice):'—'}</td></tr>`).join('');
+      right.append($(`<table><thead><tr><th>Symbol</th><th>Side</th><th>Type</th><th>Qty</th><th>Status</th><th>Fill</th></tr></thead><tbody>${rows}</tbody></table>`));
+    } else right.append($(`<div class="empty">No orders yet — hit “Simulate activity”.</div>`));
+  }
+  grid.append(right);
+  root.append(grid);
+  app.append(root);
+  root.querySelector('#open').onclick=()=>doOpen(me);
+}
+
+async function doOpen(me){
+  const nickname=prompt('Account nickname?','My futures account');
+  if(nickname===null) return;
+  try{ const a=await api('/app/account/open',{method:'POST',body:{legalStatus:'Individual',nickname}});
+    toast('Account '+a.id+' opened (pending funding).'); S.selected=a.id; await viewDashboard();
+  }catch(e){toast(e.message);}
+}
+async function doDeposit(id,amount,me){
+  try{ await api('/app/account/deposit',{method:'POST',body:{accountId:id,amount}});
+    toast('Deposited '+fmt(amount)+' — account active.'); await viewDashboard();
+  }catch(e){toast(e.message);}
+}
+async function doSimulate(id,me){
+  try{ const r=await api('/app/account/simulate',{method:'POST',body:{accountId:id}});
+    const t=r.trade; toast(`${t.side} ${t.qty} ${t.symbol} @ ${fmt(t.price)} · realized ${signed(t.realized)}`);
+    await viewDashboard();
+  }catch(e){toast(e.message);}
+}
+
+/* ---------- router ---------- */
+function route(view,arg){
+  renderNav();
+  if(view==='landing') return viewLanding();
+  if(view==='auth') return viewAuth(arg||'register');
+  if(view==='dashboard') return viewDashboard();
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  renderNav();
+  if(S.token) route('dashboard'); else route('landing');
+});
+</script>
+</body>
+</html>
