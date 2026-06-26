@@ -345,15 +345,11 @@ async function doSimulate(id,me){
 
 /* ---------- router ---------- */
 function route(view,arg){
-  renderNav();
-  if(view==='landing') return viewLanding();
-  if(view==='auth') return viewAuth(arg||'register');
-  if(view==='dashboard') return viewDashboard();
+  if(view==='auth'){ window.location.href = '/auth' + (arg==='login' ? '#login' : ''); return; }
+  if(view==='dashboard'){ window.location.href = '/dashboard'; return; }
+  renderNav(); return viewLanding();
 }
-window.addEventListener('DOMContentLoaded',()=>{
-  renderNav();
-  if(S.token) route('dashboard'); else route('landing');
-});
+window.addEventListener('DOMContentLoaded',()=>{ renderNav(); viewLanding(); });
 </script>
 </body>
 </html>

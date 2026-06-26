@@ -36,15 +36,33 @@ const PORT = process.env.PORT || 8787;
 const ENV_LABEL = process.env.NTC_ENV || 'demo';
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 
-function serveSpa(res) {
+const CONTENT_TYPES = {
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+  '.jsx': 'text/babel; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml',
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.map': 'application/json',
+  '.webp': 'image/webp', '.gif': 'image/gif'
+};
+
+// Serve a file from public/. Returns true if served, false if not found (no response written).
+function serveStatic(res, relPath) {
   try {
-    const html = fs.readFileSync(path.join(PUBLIC_DIR, 'index.html'));
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
-    res.end(html);
-  } catch (e) {
-    res.writeHead(500, { 'Content-Type': 'text/plain' });
-    res.end('Frontend not found: ' + e.message);
-  }
+    let rel = decodeURIComponent(relPath).replace(/^\/+/, '');
+    const full = path.normalize(path.join(PUBLIC_DIR, rel));
+    if (!full.startsWith(PUBLIC_DIR)) return false; // path traversal guard
+    if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return false;
+    const ext = path.extname(full).toLowerCase();
+    res.writeHead(200, {
+      'Content-Type': CONTENT_TYPES[ext] || 'application/octet-stream',
+      'Cache-Control': 'no-cache', 'Access-Control-Allow-Origin': '*'
+    });
+    res.end(fs.readFileSync(full));
+    return true;
+  } catch (e) { return false; }
+}
+function serveSpa(res) {
+  if (!serveStatic(res, 'index.html')) { res.writeHead(500); res.end('index.html missing'); }
 }
 
 /* ----------------------------------------------------------------------- */
@@ -117,6 +135,8 @@ function route(method, path, handler) { routes.push({ method, path, handler }); 
 
 /* --- meta / health --- */
 route('GET', '/', async (req, res) => serveSpa(res));
+route('GET', '/auth', async (req, res) => { if (!serveStatic(res, 'auth.html')) fail(res, 404, 'auth.html missing'); });
+route('GET', '/dashboard', async (req, res) => { if (!serveStatic(res, 'dashboard.html')) fail(res, 404, 'dashboard.html missing'); });
 route('GET', '/healthz', async (req, res) => {
   send(res, 200, { service: 'Talero NT Connect mock', env: ENV_LABEL, backend: store.backend, health: 'ok' });
 });
@@ -667,7 +687,11 @@ const server = http.createServer(async (req, res) => {
   const query = Object.fromEntries(url.searchParams.entries());
   const match = routes.find((r) => r.method === req.method && r.path === path);
   if (!match) {
-    if (req.method === 'GET' && !path.startsWith('/v1') && !path.startsWith('/app')) return serveSpa(res);
+    if (req.method === 'GET' && !path.startsWith('/v1') && !path.startsWith('/app')) {
+      if (serveStatic(res, path === '/' ? 'index.html' : path)) return;   // static asset (jsx, svg, ...)
+      if (!path.includes('.')) return serveSpa(res);                        // unknown route -> landing
+      return fail(res, 404, 'Not found: ' + path);
+    }
     return fail(res, 404, `No route ${req.method} ${path}`);
   }
   try {
