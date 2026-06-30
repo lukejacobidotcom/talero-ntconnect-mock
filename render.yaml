@@ -6,13 +6,15 @@ services:
     name: talero-ntconnect-mock
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: node dist/server.js
     healthCheckPath: /healthz
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
         value: "22"
+      - key: NODE_ENV
+        value: development      # sandbox demo: installs devDeps to build TS + keeps fallback secrets working
       - key: DATA_BACKEND
         value: local           # change to "sheets" once SHEET_ID + creds are set
       - key: NTC_ENV
