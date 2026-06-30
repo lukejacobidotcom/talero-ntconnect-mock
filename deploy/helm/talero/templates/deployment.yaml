@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "talero.fullname" . }}
+  labels: {{- include "talero.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "talero.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels: {{- include "talero.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: talero
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8787
+          env:
+            {{- range $k, $v := .Values.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+            - name: TOKEN_SECRET
+              valueFrom: { secretKeyRef: { name: {{ .Values.existingSecret }}, key: TOKEN_SECRET } }
+            - name: TALERO_PARTNER_SECRET
+              valueFrom: { secretKeyRef: { name: {{ .Values.existingSecret }}, key: TALERO_PARTNER_SECRET } }
+          readinessProbe:
+            httpGet: { path: /healthz, port: 8787 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: 8787 }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources: {{- toYaml .Values.resources | nindent 12 }}

@@ -1,103 +1,64 @@
-# Talero — NT Connect mock API + Google Sheets datastore
+# Talero — NT Connect API service
 
-A working sandbox that **clones the NT Connect (Tradovate-based) `/v1` partner API** so the
-Talero marketing site, login/registration, dashboard, and back-office can be built and
-demoed **before live NinjaTrader partner credentials are issued**. Data lives in **Google
-Sheets** (or a local JSON file). Self-issued API keys stand in for Ninja's until the real
-ones arrive.
+TypeScript Node service for **Talero** (introducing-broker front end under MyFundedFutures). It
+clones the **NT Connect (Tradovate-based) `/v1`** partner contract and adds an `/app` layer for the
+customer web app. Modular, **zero runtime dependencies**, containerized for Kubernetes.
 
-> **Why a clone, not the real thing?** `connect.ninjatrader.com` is a partner-gated
-> marketing page — there is no public NT Connect API doc or public sandbox key; access is
-> behind a partner agreement. Per Talero's own `docs/backoffice-ntconnect-reconciliation.md`,
-> NT Connect runs on the **Tradovate** engine (`*.tradovateapi.com`, `/v1`, Bearer auth),
-> whose surface *is* documented — so this mock clones that contract. When real credentials
-> arrive, point the frontend at the live base URL; the request/response shapes already match.
->
-> **Sandbox notice.** Not affiliated with NinjaTrader. Dummy data only. Do not present as a
-> production brokerage backend or to customers/regulators.
+> **Sandbox.** Data is mock and the partner integration is simulated — safe for internal dev/demo.
+> A real, money-handling brokerage additionally needs the live NT Connect partner agreement,
+> KYC/AML, customer-fund segregation, and SOC 2. Do not point this at real customer money as-is.
 
----
+## Stack
+TypeScript · Node 22 (built-ins only) · `node:test` · ESLint + Prettier · Docker · Helm (Dev/Staging/Prod) · GitHub Actions CI/CD. Frontend in `public/` (static today; Next.js is the planned direction).
 
-## 1. Run it locally (zero setup, zero dependencies)
-
+## Quick start
 ```bash
-cd talero-ntconnect-mock
-npm start              # -> http://localhost:8787  (backend = local JSON)
-npm run smoke          # end-to-end test: token -> create account -> pull it back
+npm install        # dev tooling (typescript, types, eslint, prettier)
+npm run build      # tsc -> dist/
+npm start          # node dist/server.js  ->  http://localhost:8787
+npm test           # build + node:test (26 tests)
+npm run coverage   # + line/branch/function coverage
+npm run lint       # eslint
 ```
-`npm run reset` restores the seeded data.
+Local demo login: `jordan.castillo@example.com` / `TaleroDemo1!`. New sign-ups need an 8+ char password.
 
-## 2. Issued API keys (your stand-in "Ninja" keys)
+## Project structure
+```
+src/
+  config/      typed env + .env loader + prod-secret enforcement
+  lib/         http, token (HS256), password (scrypt), lock, time
+  middleware/  auth (requireAuth / requireCustomer)
+  services/    accounts, validation
+  store/       index (selector) -> localStore | sheetsStore  [postgres next]
+  routes/      meta, auth, users, accounting, positions, funds, risk, applications, market, app
+  router.ts    route table
+  app.ts       dispatcher (CORS, static, /app gate, error boundary)
+  server.ts    entrypoint + test export surface
+tests/         node:test suite (HTTP-level)
+deploy/helm/   Helm chart + values-{dev,staging,prod}
+docs/          ARCHITECTURE.md, openapi.yaml
+.github/workflows/  ci.yml, deploy.yml
+Dockerfile     multi-stage; runtime image has no node_modules
+```
+See `docs/ARCHITECTURE.md` for the request flow and design decisions, and `docs/openapi.yaml` for the API.
 
-On the **ApiKeys** tab of the workbook / in `data/seed.json`:
-
-| Field | DEMO / sandbox (active) |
+## Configuration (env)
+| Var | Purpose |
 |---|---|
-| `cid` | `80432` |
-| `appId` | `Talero.NTConnect.Partner` |
-| `sec` (API key) | `ntc_demo_sk_9c1f4b7e2a6d05e3b8c4f17a0d29e6b5` |
-| Org admin user | `talero.partner.admin` |
+| `PORT` | listen port (default 8787) |
+| `NODE_ENV` | `production` enforces real secrets (no sandbox fallbacks) |
+| `NTC_ENV` | label: demo / staging / prod |
+| `DATA_BACKEND` | `local` (JSON) or `sheets` (Google Sheets) |
+| `TOKEN_SECRET` | **required in production** — JWT signing secret |
+| `TALERO_PARTNER_SECRET` | **required in production** — partner API secret (cid 80432) |
+| `SHEET_ID`, `GOOGLE_SERVICE_ACCOUNT_JSON`/`_FILE` | for the Sheets backend |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google sign-in (unset = sandbox simulator) |
 
-A `live` key (`cid 80433`, `ntc_live_sk_...`) is seeded but **disabled** until you flip it.
+## Deploy
+- **Docker:** `docker build -t talero . && docker run -p 8787:8787 -e TOKEN_SECRET=... -e TALERO_PARTNER_SECRET=... talero`
+- **Kubernetes:** `helm upgrade --install talero deploy/helm/talero -f deploy/helm/talero/values-prod.yaml` (create the `talero-secrets` Secret first).
+- **CI/CD:** PRs run build + lint + tests + coverage; pushes to `main` build/push the image and `helm upgrade` Dev → Staging → Prod (Staging/Prod gated by GitHub Environment approvals).
+- **Render (sandbox):** `render.yaml` blueprint, still live.
 
-Get a token:
-```bash
-curl -s -X POST http://localhost:8787/v1/auth/accesstokenrequest \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"talero.partner.admin","appId":"Talero.NTConnect.Partner","appVersion":"1.0","cid":80432,"sec":"ntc_demo_sk_9c1f4b7e2a6d05e3b8c4f17a0d29e6b5"}'
-```
-
-## 3. Make Google Sheets the datastore
-
-1. Import `Talero_NTConnect_Sheets_DB.xlsx` into Google Sheets
-   (Drive → New → File upload → Open → File → *Save as Google Sheets*).
-2. Google Cloud Console → create a **service account** → create a **JSON key**.
-   Enable the **Google Sheets API** for the project.
-3. **Share the sheet** (Editor) with the service account's `client_email`.
-4. Set env and run:
-   ```bash
-   export DATA_BACKEND=sheets
-   export SHEET_ID=<id from the sheet URL>
-   export GOOGLE_SERVICE_ACCOUNT_JSON="$(base64 -w0 service-account.json)"
-   npm start
-   ```
-   The server now reads/writes the live Sheet. Tab names + row-1 headers already match the
-   field names the API uses, so behaviour is identical to local mode — accounts you create
-   via the API land as new rows you can watch appear in the Sheet.
-
-## 4. Deploy to Render
-
-1. Push this folder to a GitHub repo.
-2. Render → **New + → Blueprint** → pick the repo (it reads `render.yaml`).
-3. It deploys as a Node web service. `TOKEN_SECRET` is auto-generated.
-4. To go Sheets-backed in prod: set `DATA_BACKEND=sheets`, `SHEET_ID`, and
-   `GOOGLE_SERVICE_ACCOUNT_JSON` (base64) in the service's Environment tab, then redeploy.
-
-> Free Render web services sleep when idle and cold-start on the next request — fine for a
-> sandbox/demo.
-
-## 5. Wire the frontend
-
-The Talero frontend calls an `API_BASE`. Point it at this service:
-- local: `http://localhost:8787`
-- Render: `https://talero-ntconnect-mock.onrender.com`
-
-Marketing site = static (host the landing HTML anywhere / as its own Render static site).
-Login/registration → `POST /app/register`, `POST /app/login`. Dashboard → `/v1/account/list`,
-`/v1/cashBalance/getcashbalancesnapshot`, `/v1/position/list`, etc. CORS is open on the mock.
-
-## 6. What's in the box
-
-```
-src/server.js            zero-dep HTTP server (the API)
-src/lib/localStore.js    local JSON datastore (default)
-src/lib/sheetsStore.js   Google Sheets datastore (RS256 service-account auth)
-src/lib/store.js         backend selector (+ auto-fallback to local)
-src/lib/token.js         HS256 access tokens
-data/seed.json           single source of truth for dummy data + issued keys
-scripts/build_workbook.py  regenerates the .xlsx from seed.json
-scripts/smoke_test.sh    end-to-end test
-NT_CONNECT_API.md        API reference (the cloned docs)
-Talero_NTConnect_Sheets_DB.xlsx   the Google-Sheets datastore (import this)
-render.yaml / .env.example        deploy + config
-```
+## Testing & audit
+`node:test` hits the HTTP surface, so it survives refactors. The repo also ships a coverage/production-readiness audit agent at `.claude/agents/coverage-auditor.md` — run it before releases.

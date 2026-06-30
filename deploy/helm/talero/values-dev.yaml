@@ -1,0 +1,9 @@
+# Dev: single replica, sandbox mode (NODE_ENV != production keeps demo defaults working).
+replicaCount: 1
+image: { tag: dev }
+env:
+  NODE_ENV: development
+  NTC_ENV: demo
+  DATA_BACKEND: local
+ingress: { host: dev.talero.markets }
+autoscaling: { enabled: false }

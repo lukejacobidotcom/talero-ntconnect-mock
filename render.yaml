@@ -6,8 +6,8 @@ services:
     name: talero-ntconnect-mock
     runtime: node
     plan: free
-    buildCommand: npm install
-    startCommand: node src/server.js
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server.js
     healthCheckPath: /healthz
     autoDeploy: true
     envVars:

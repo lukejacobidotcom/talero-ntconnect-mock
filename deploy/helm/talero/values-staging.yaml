@@ -1,0 +1,9 @@
+# Staging: production mode, Sheets backend, modest autoscaling. Requires talero-secrets.
+replicaCount: 2
+image: { tag: staging }
+env:
+  NODE_ENV: production
+  NTC_ENV: staging
+  DATA_BACKEND: sheets
+ingress: { host: staging.talero.markets }
+autoscaling: { enabled: true, minReplicas: 2, maxReplicas: 4, targetCPUUtilizationPercentage: 70 }

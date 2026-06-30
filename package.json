@@ -1,14 +1,27 @@
 {
   "name": "talero-ntconnect-mock",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Talero sandbox that clones the NT Connect (Tradovate-based) /v1 partner API, backed by Google Sheets or a local JSON store.",
-  "main": "src/server.js",
-  "scripts": {
-    "start": "node src/server.js",
-    "reset": "node scripts/reset.js",
-    "smoke": "bash scripts/smoke_test.sh"
-  },
+  "description": "Talero — NT Connect (Tradovate-based) partner-API sandbox. TypeScript, modular, zero runtime dependencies.",
+  "main": "dist/server.js",
   "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "tsc -w -p tsconfig.json",
+    "reset": "node scripts/reset.js",
+    "test": "npm run build && node --test",
+    "coverage": "npm run build && node --test --experimental-test-coverage",
+    "lint": "eslint \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.5",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/parser": "^7.7.0",
+    "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "prettier": "^3.2.5"
+  },
   "license": "UNLICENSED"
 }

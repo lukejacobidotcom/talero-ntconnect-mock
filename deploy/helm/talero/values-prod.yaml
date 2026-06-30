@@ -1,0 +1,9 @@
+# Prod: 3+ replicas, production mode, autoscaling. Requires talero-secrets.
+replicaCount: 3
+image: { tag: stable }
+env:
+  NODE_ENV: production
+  NTC_ENV: prod
+  DATA_BACKEND: sheets
+ingress: { host: app.talero.markets }
+autoscaling: { enabled: true, minReplicas: 3, maxReplicas: 10, targetCPUUtilizationPercentage: 70 }

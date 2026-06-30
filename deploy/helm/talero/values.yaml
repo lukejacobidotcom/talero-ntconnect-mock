@@ -1,0 +1,29 @@
+# Defaults (prod-leaning). Override per environment with values-<env>.yaml.
+replicaCount: 2
+image:
+  repository: ghcr.io/myfundedfutures/talero
+  tag: latest
+  pullPolicy: IfNotPresent
+env:
+  NODE_ENV: production
+  NTC_ENV: prod
+  DATA_BACKEND: local
+  PORT: "8787"
+# k8s Secret (created out-of-band) holding TOKEN_SECRET and TALERO_PARTNER_SECRET.
+existingSecret: talero-secrets
+service:
+  type: ClusterIP
+  port: 80
+ingress:
+  enabled: true
+  className: nginx
+  host: app.talero.markets
+  tls: true
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 256Mi }
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70

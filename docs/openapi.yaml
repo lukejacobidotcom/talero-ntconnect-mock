@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Talero NT Connect API (sandbox)
+  version: 0.2.0
+  description: >
+    Clone of the NT Connect (Tradovate-based) /v1 partner contract plus the Talero /app customer
+    layer. Sandbox/mock data. Bearer-token auth.
+servers:
+  - url: https://talero-ntconnect-mock.onrender.com
+  - url: http://localhost:8787
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    Error: { description: Error, content: { application/json: { schema: { type: object, properties: { errorText: { type: string } } } } } }
+paths:
+  /healthz: { get: { summary: Health check, responses: { '200': { description: ok } } } }
+  /v1/timestamp: { get: { summary: Server time, responses: { '200': { description: ISO timestamp } } } }
+  /v1/auth/accesstokenrequest:
+    post:
+      summary: Exchange cid + sec (partner API key) for an access token
+      requestBody: { required: true, content: { application/json: { schema: { type: object, properties: { name: {type: string}, cid: {type: integer}, sec: {type: string} } } } } }
+      responses: { '200': { description: token or errorText } }
+  /v1/account/list: { get: { summary: List accounts, security: [{bearer: []}], responses: { '200': {description: accounts}, '401': {$ref: '#/components/responses/Error'} } } }
+  /v1/account/item: { get: { summary: Account by id, security: [{bearer: []}], parameters: [{name: id, in: query, required: true, schema: {type: integer}}], responses: { '200': {description: account}, '404': {$ref: '#/components/responses/Error'} } } }
+  /v1/account/create: { post: { summary: Create an account, security: [{bearer: []}], responses: { '200': {description: created account} } } }
+  /v1/cashBalance/getcashbalancesnapshot: { get: { summary: Latest cash-balance snapshot, security: [{bearer: []}], parameters: [{name: accountId, in: query, required: true, schema: {type: integer}}], responses: { '200': {description: snapshot} } } }
+  /v1/position/list: { get: { summary: Positions, security: [{bearer: []}], responses: { '200': {description: positions} } } }
+  /v1/order/list: { get: { summary: Orders, security: [{bearer: []}], responses: { '200': {description: orders} } } }
+  /v1/funds/deposit: { post: { summary: Record a deposit, security: [{bearer: []}], responses: { '200': {description: fund record}, '400': {$ref: '#/components/responses/Error'} } } }
+  /v1/funds/withdraw: { post: { summary: Submit a withdrawal, security: [{bearer: []}], responses: { '200': {description: pending_review} } } }
+  /v1/risk/halt: { post: { summary: Halt/resume (account or org), security: [{bearer: []}], responses: { '200': {description: halt state} } } }
+  /v1/customerApplication/approve: { post: { summary: Approve AOP application + issue account, security: [{bearer: []}], responses: { '200': {description: approved} } } }
+  /app/register:
+    post:
+      summary: Customer self-registration (email + password >= 8)
+      requestBody: { required: true, content: { application/json: { schema: { type: object, properties: { email: {type: string}, password: {type: string}, firstName: {type: string}, lastName: {type: string} } } } } }
+      responses: { '200': {description: sessionToken + user}, '400': {$ref: '#/components/responses/Error'}, '409': {$ref: '#/components/responses/Error'} }
+  /app/login:
+    post:
+      summary: Customer login (verifies scrypt password)
+      responses: { '200': {description: sessionToken + accounts}, '401': {$ref: '#/components/responses/Error'} }
+  /app/me: { get: { summary: Authenticated customer + accounts, security: [{bearer: []}], responses: { '200': {description: profile}, '403': {$ref: '#/components/responses/Error'} } } }
+  /app/account: { get: { summary: Account bundle (balance, positions, orders), security: [{bearer: []}], parameters: [{name: id, in: query, required: true, schema: {type: integer}}], responses: { '200': {description: bundle}, '404': {$ref: '#/components/responses/Error'} } } }
+  /app/account/open: { post: { summary: Open an account for the logged-in customer, security: [{bearer: []}], responses: { '200': {description: account} } } }
+  /app/account/deposit: { post: { summary: Deposit (locked, validated), security: [{bearer: []}], responses: { '200': {description: ok}, '400': {$ref: '#/components/responses/Error'} } } }
+  /app/account/simulate: { post: { summary: Simulate a trade (locked), security: [{bearer: []}], responses: { '200': {description: trade + balance} } } }
