@@ -25,3 +25,7 @@ services:
         sync: false             # set in dashboard when going Sheets-backed
       - key: GOOGLE_SERVICE_ACCOUNT_JSON
         sync: false             # paste the base64 service-account JSON here
+      - key: GOOGLE_CLIENT_ID
+        sync: false             # Google OAuth web client id (enables real Google sign-in)
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false             # Google OAuth client secret — set in dashboard, never commit

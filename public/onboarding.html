@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Open an account · Talero</title>
+<style>
+  :root{
+    --bg:#0a1626; --card:#0f2236; --card2:#0c1c30; --line:#1d3450; --line2:#264063;
+    --text:#e8eef6; --muted:#93a4ba; --muted2:#6f839c; --accent:#2f6fed; --accent2:#1b4fc2;
+    --gold:#d9a441; --ok:#2fbf71; --warn:#e0a53a; --bad:#e05a5a;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:radial-gradient(1200px 600px at 70% -10%,#12294a 0,var(--bg) 55%);color:var(--text);margin:0;min-height:100vh}
+  a{color:#8fb4ff}
+  .wrap{max-width:820px;margin:0 auto;padding:26px 18px 60px}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .brand{font-weight:800;letter-spacing:.5px;font-size:20px}
+  .brand span{color:var(--accent)}
+  .tag{font-size:11px;color:var(--gold);border:1px solid rgba(217,164,65,.4);border-radius:99px;padding:3px 9px}
+  .spacer{flex:1}
+  .signout{font-size:12.5px;color:var(--muted);background:none;border:0;cursor:pointer}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 18px;line-height:1.5}
+  .sub b{color:#cdd9ea}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px;box-shadow:0 12px 40px rgba(0,0,0,.28)}
+  .banner{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(180deg,#122a49,#0f2338);border:1px solid var(--line2);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+  .banner .ic{width:34px;height:34px;border-radius:9px;background:rgba(47,111,237,.16);display:grid;place-items:center;color:#8fb4ff;flex:0 0 auto;font-size:17px}
+  .banner b{display:block;font-size:13.5px;margin-bottom:2px}
+  .banner small{color:var(--muted);font-size:12.5px;line-height:1.45}
+  /* journey */
+  .journey{display:flex;align-items:center;gap:0;margin:2px 0 20px;padding:0;list-style:none}
+  .jstep{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative}
+  .jdot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--card2);border:1px solid var(--line2);color:var(--muted)}
+  .jstep.done .jdot{background:var(--ok);border-color:var(--ok);color:#04210f}
+  .jstep.current .jdot{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 0 4px rgba(47,111,237,.18)}
+  .jlab{font-size:11px;color:var(--muted)}
+  .jstep.done .jlab,.jstep.current .jlab{color:var(--text)}
+  .jline{position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--line2);z-index:-1}
+  .jstep.done .jline{background:var(--ok)}
+  /* step rail */
+  .rail{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+  .rail button{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:8px 11px;font-size:12.5px;cursor:pointer}
+  .rail button.on{border-color:var(--accent);color:#fff;background:#12294a}
+  .rail button.done{color:var(--text)}
+  .rail .n{width:20px;height:20px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-size:11px;font-weight:700}
+  .rail button.on .n{background:var(--accent);color:#fff}
+  .rail button.done .n{background:var(--ok);color:#04210f}
+  .eyebrow{font-size:11px;letter-spacing:.10em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:3px}
+  .ctitle{font-size:16px;margin:0 0 3px}
+  .csub{color:var(--muted);font-size:12.5px;margin:0 0 16px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld.full{grid-column:1 / -1}
+  .fld label{font-size:12px;color:var(--muted)}
+  .fld .hint{font-size:11px;color:var(--muted2)}
+  input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 11px;color:var(--text);font-size:13.5px;font-family:inherit;outline:none}
+  input:focus,select:focus{border-color:var(--accent)}
+  .uploads{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .upl{border:1px dashed var(--line2);border-radius:12px;padding:16px;text-align:center;background:var(--card2)}
+  .upl b{display:block;font-size:13px;margin-bottom:2px}
+  .upl small{color:var(--muted);font-size:11.5px;display:block;margin-bottom:10px}
+  .upl button{background:none;border:1px solid var(--line2);color:var(--text);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer}
+  .upl.done{border-color:var(--ok);border-style:solid}
+  .upl.done button{border-color:var(--ok);color:var(--ok);pointer-events:none}
+  .note{display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--muted);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-top:14px;line-height:1.45}
+  .note.warn{border-color:rgba(224,165,58,.5);color:#f1cd86}
+  .agree{list-style:none;padding:0;margin:0}
+  .agree li{display:flex;align-items:center;gap:11px;padding:11px 2px;border-bottom:1px solid var(--line)}
+  .agree li:last-child{border-bottom:0}
+  .cbx{width:22px;height:22px;border-radius:6px;border:1px solid var(--line2);background:var(--bg);display:grid;place-items:center;cursor:pointer;flex:0 0 auto;color:transparent;font-size:13px;font-weight:800}
+  .cbx.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .agree .t{font-size:13px;flex:1}
+  .agree .opt{color:var(--muted2);font-size:11.5px}
+  .review dt{color:var(--muted);font-size:12px}
+  .review dd{margin:0 0 12px;font-size:13.5px}
+  .foot{display:flex;align-items:center;gap:10px;margin-top:18px}
+  .btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;font-size:13.5px;cursor:pointer}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+  .btn-ghost{background:none;border:1px solid var(--line2);color:var(--text)}
+  .btn-ghost:disabled{opacity:.4;cursor:not-allowed}
+  .push{margin-left:auto}
+  .result{text-align:center;padding:10px 6px 4px}
+  .result .ric{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;font-size:26px}
+  .result.ok .ric{background:rgba(47,191,113,.16);color:var(--ok)}
+  .result.warn .ric{background:rgba(224,165,58,.16);color:var(--warn)}
+  .result.bad .ric{background:rgba(224,90,90,.16);color:var(--bad)}
+  .result h2{font-size:19px;margin:0 0 8px}
+  .result p{color:var(--muted);font-size:13.5px;line-height:1.55;max-width:520px;margin:0 auto 8px}
+  .doclist{list-style:none;padding:0;margin:14px auto;max-width:460px;text-align:left}
+  .doclist li{display:flex;align-items:center;gap:9px;font-size:13px;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:8px}
+  .doclist .pill{margin-left:auto;font-size:11px;color:var(--warn);border:1px solid rgba(224,165,58,.4);border-radius:99px;padding:2px 8px}
+  .fine{color:var(--muted2);font-size:11.5px;line-height:1.5;margin-top:14px;text-align:center}
+  .loading{color:var(--muted);text-align:center;padding:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Tal<span>ero</span></div>
+    <span class="tag">SANDBOX</span>
+    <div class="spacer"></div>
+    <button class="signout" onclick="signOut()">Sign out</button>
+  </div>
+
+  <h1>Open an account</h1>
+  <p class="sub">Talero introduces your account to <b>NinjaTrader Clearing, LLC</b> — the carrying broker (FCM). Identity, suitability, and disclosures are collected here and verified through NinjaTrader's Account Opening Process (AOP). <b>NinjaTrader Clearing holds final KYC/AML and approval authority.</b></p>
+
+  <ol class="journey" id="journey"></ol>
+  <div id="stage"><div class="loading">Loading your application…</div></div>
+
+  <p class="fine">Talero is a CFTC-registered introducing broker. Accounts are carried, cleared, and custodied by NinjaTrader Clearing, LLC. Talero does not accept or hold customer funds. Approval is simulated in this sandbox.</p>
+</div>
+
+<script>
+(function () {
+  var TOKEN = null;
+  try { TOKEN = localStorage.getItem('talero_token'); } catch (e) {}
+  if (!TOKEN) { window.location.replace('/auth'); return; }
+  var H = { 'Authorization': 'Bearer ' + TOKEN };
+  var JH = { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' };
+  var stage = document.getElementById('stage');
+
+  var STEPS = ['Application', 'Identity (CIP)', 'Suitability', 'Agreements', 'Review'];
+  var JOURNEY = ['Submitted', 'Under review', 'Approved', 'Fund', 'Trade'];
+  var AGREEMENTS = [
+    { k: 'cust', t: 'NinjaTrader Clearing Customer Agreement' },
+    { k: 'nfa', t: 'NFA Risk Disclosure Statement' },
+    { k: 'risk', t: 'Risk disclosure certifications (loss, leverage, additional-deposit risk)' },
+    { k: 'suit', t: 'Suitability acknowledgment' },
+    { k: 'md', t: 'Non-Professional Market Data Agreement' },
+    { k: 'w8', t: 'W-8BEN (non-US residents only)', optional: true }
+  ];
+
+  var step = 0;
+  var f = {
+    first: '', last: '', phone: '', dob: '', ssn: '',
+    addr: '', city: '', region: '', zip: '', country: 'United States',
+    idDoc: false, addressDoc: false, w8doc: false,
+    exp: '3-5 years', employ: 'Employed', income: '$100k-$250k', net: '$250k-$1M',
+    objective: 'Speculation', risk: 'High',
+    agreed: {}, econsent: true
+  };
+  function isUS() { return String(f.country).toLowerCase().indexOf('united states') === 0 || f.country === 'United States'; }
+
+  window.signOut = function () { try { localStorage.removeItem('talero_token'); } catch (e) {} window.location.href = '/auth'; };
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function renderJourney(idx) {
+    var el = document.getElementById('journey');
+    el.innerHTML = JOURNEY.map(function (s, i) {
+      var cls = i < idx ? 'done' : i === idx ? 'current' : '';
+      var line = i < JOURNEY.length - 1 ? '<span class="jline"></span>' : '';
+      var mark = i < idx ? '&#10003;' : (i + 1);
+      return '<li class="jstep ' + cls + '">' + line + '<span class="jdot">' + mark + '</span><span class="jlab">' + s + '</span></li>';
+    }).join('');
+  }
+
+  // ---- boot: check for an existing application ----
+  (async function boot() {
+    try {
+      var me = await (await fetch('/app/me', { headers: H })).json();
+      if (me && me.user) { f.first = me.user.firstName || ''; f.last = me.user.lastName || ''; }
+      var st = await (await fetch('/app/application', { headers: H })).json();
+      route(st);
+    } catch (e) { stage.innerHTML = '<div class="card">Could not load onboarding. <a href="/auth">Sign in again</a>.</div>'; }
+  })();
+
+  function route(st) {
+    var app = st && st.application;
+    if (!app) { renderWizard(); return; }
+    var lc = app.lifecycle, status = app.status;
+    if (lc === 'Active') { window.location.replace('/dashboard'); return; }
+    if (lc === 'Awaiting Funding') return renderApproved(app);
+    if (lc === 'Rejected') return renderRejected();
+    if (status === 'Documents required' || lc === 'KYC Pending') return renderDocs(app);
+    // Agreements Pending / Application Started / anything else -> let them complete the wizard
+    renderWizard();
+  }
+
+  // ---- wizard ----
+  function renderWizard() {
+    renderJourney(0);
+    var rail = STEPS.map(function (s, i) {
+      var cls = i === step ? 'on' : i < step ? 'done' : '';
+      var mark = i < step ? '&#10003;' : (i + 1);
+      return '<button onclick="__go(' + i + ')" class="' + cls + '"><span class="n">' + mark + '</span>' + s + '</button>';
+    }).join('');
+
+    var body = '';
+    if (step === 0) {
+      body = section('Step 1', 'Your details', "Collected by Talero and submitted to NinjaTrader Clearing's AOP. Encrypted in transit and at rest.") +
+        '<div class="grid">' +
+        fld('Legal first name', inp('first')) + fld('Legal last name', inp('last')) +
+        fld('Mobile phone', inp('phone', 'tel', '+1 (415) 555-0142')) + fld('Date of birth', inp('dob', 'date')) +
+        fld('Residential address', inp('addr', 'text', '240 Spear Street'), '', true) +
+        fld('City', inp('city')) + fld('State / Region', inp('region')) +
+        fld('Postal code', inp('zip')) +
+        fld('Country of residence', sel('country', ['United States', 'Canada', 'United Kingdom', 'Singapore', 'Australia', 'Russia'])) +
+        '</div>';
+    } else if (step === 1) {
+      body = section('Step 2', 'Identity verification (CIP)', "NinjaTrader Clearing verifies identity via LexisNexis InstantID and Alloy. Upload a government photo ID and proof of address dated within 90 days.") +
+        '<div class="uploads">' +
+        uploadTile('idDoc', 'Government photo ID', 'Passport or driver&#39;s license') +
+        uploadTile('addressDoc', 'Proof of address', 'Utility bill or statement · &lt; 90 days') +
+        '</div>' +
+        (isUS()
+          ? '<div style="margin-top:12px">' + fld('SSN / ITIN', inp('ssn', 'text', '••• •• 4821'), 'Required by CIP (Customer Identification Program)', true) + '</div>'
+          : '<div class="uploads" style="margin-top:12px">' + uploadTile('w8doc', 'W-8BEN certification', 'Required for non-US residents') + '</div>') +
+        '<div class="note">NinjaTrader Clearing performs and finally dispositions identity verification. Most checks complete automatically; some route to manual review.</div>';
+    } else if (step === 2) {
+      body = section('Step 3', 'Suitability questionnaire', 'Required by NTC to assess suitability for futures trading.') +
+        '<div class="grid">' +
+        fld('Trading experience', sel('exp', ['< 1 year', '1-3 years', '3-5 years', '5+ years'])) +
+        fld('Employment status', sel('employ', ['Employed', 'Self-employed', 'Retired', 'Student', 'Unemployed'])) +
+        fld('Annual income', sel('income', ['< $50k', '$50k-$100k', '$100k-$250k', '$250k+'])) +
+        fld('Net worth', sel('net', ['< $100k', '$100k-$250k', '$250k-$1M', '$1M+'])) +
+        fld('Investment objective', sel('objective', ['Speculation', 'Hedging', 'Income', 'Growth'])) +
+        fld('Risk tolerance', sel('risk', ['Low', 'Medium', 'High'])) +
+        '</div>';
+    } else if (step === 3) {
+      body = section('Step 4', 'Agreements & disclosures', 'Review and accept the documents required by NinjaTrader Clearing.') +
+        '<ul class="agree">' + AGREEMENTS.map(function (a) {
+          return '<li><button class="cbx ' + (f.agreed[a.k] ? 'on' : '') + '" onclick="__agree(\'' + a.k + '\')">&#10003;</button>' +
+            '<span class="t">' + a.t + (a.optional ? ' <span class="opt">· optional</span>' : '') + '</span></li>';
+        }).join('') +
+        '<li><button class="cbx ' + (f.econsent ? 'on' : '') + '" onclick="__econsent()">&#10003;</button><span class="t">I consent to electronic delivery of all account documents, statements, and notices.</span></li>' +
+        '</ul>' +
+        '<div class="note">Agreements are captured and retained by NinjaTrader Clearing through the AOP — Talero does not run a separate e-signature process.</div>';
+    } else if (step === 4) {
+      var ok = requiredAgreed();
+      body = section('Step 5', 'Review & submit', 'Confirm your details before submitting to NinjaTrader Clearing.') +
+        '<dl class="review">' +
+        rev('Name', (f.first || '—') + ' ' + f.last) + rev('Country', f.country) +
+        rev('Identity docs', docsSummary()) +
+        rev('Trading experience', f.exp) + rev('Objective · risk', f.objective + ' · ' + f.risk) +
+        rev('Agreements', ok ? 'All required accepted' : 'Incomplete') +
+        '</dl>' +
+        (ok ? '' : '<div class="note warn">Please accept all required agreements and e-delivery consent (Step 4) before submitting.</div>') +
+        '<div class="note">On submit, your application goes to NinjaTrader Clearing\'s New Accounts team (1-2 business day review). You\'ll fund the account once approved.</div>';
+    }
+
+    var backDis = step === 0 ? 'disabled' : '';
+    var footer;
+    if (step < 4) footer = '<button class="btn btn-ghost" ' + backDis + ' onclick="__back()">Back</button>' +
+      '<button class="btn btn-primary push" onclick="__next()">Continue: ' + STEPS[step + 1] + '</button>';
+    else footer = '<button class="btn btn-ghost" onclick="__back()">Back</button>' +
+      '<button class="btn btn-primary push" id="submitBtn" ' + (requiredAgreed() ? '' : 'disabled') + ' onclick="__submit()">Submit to NinjaTrader Clearing</button>';
+
+    stage.innerHTML =
+      '<div class="banner"><span class="ic">&#9733;</span><div><b>NinjaTrader AOP — embedded in Talero</b><small>These steps run NinjaTrader\'s account-opening process inside Talero. CIP/KYC is performed by NinjaTrader Clearing (LexisNexis InstantID + Alloy).</small></div></div>' +
+      '<div class="rail">' + rail + '</div>' +
+      '<div class="card">' + body + '<div class="foot">' + footer + '</div></div>';
+  }
+
+  function section(eyebrow, title, sub) { return '<div class="eyebrow">' + eyebrow + '</div><h3 class="ctitle">' + title + '</h3><p class="csub">' + sub + '</p>'; }
+  function fld(label, control, hint, full) { return '<div class="fld' + (full ? ' full' : '') + '"><label>' + label + '</label>' + control + (hint ? '<span class="hint">' + hint + '</span>' : '') + '</div>'; }
+  function inp(key, type, ph) { return '<input type="' + (type || 'text') + '" value="' + esc(f[key]) + '" placeholder="' + (ph || '') + '" oninput="__set(\'' + key + '\',this.value)">'; }
+  function sel(key, opts) { return '<select onchange="__set(\'' + key + '\',this.value)">' + opts.map(function (o) { return '<option' + (f[key] === o ? ' selected' : '') + '>' + o + '</option>'; }).join('') + '</select>'; }
+  function uploadTile(key, title, sub) {
+    var done = f[key];
+    return '<div class="upl ' + (done ? 'done' : '') + '"><b>' + title + '</b><small>' + sub + '</small>' +
+      '<button onclick="__upload(\'' + key + '\')">' + (done ? '&#10003; Uploaded' : 'Upload') + '</button></div>';
+  }
+  function rev(dt, dd) { return '<dt>' + dt + '</dt><dd>' + esc(dd) + '</dd>'; }
+  function docsSummary() {
+    var parts = [];
+    if (f.idDoc) parts.push('ID'); if (f.addressDoc) parts.push('address');
+    if (isUS() ? (f.ssn && f.ssn.trim()) : f.w8doc) parts.push(isUS() ? 'SSN/ITIN' : 'W-8BEN');
+    return parts.length ? parts.join(', ') + ' provided' : 'Not yet provided';
+  }
+  function requiredAgreed() { return ['cust', 'nfa', 'risk', 'suit', 'md'].every(function (k) { return f.agreed[k]; }) && f.econsent; }
+
+  window.__go = function (i) { step = i; renderWizard(); };
+  window.__back = function () { step = Math.max(0, step - 1); renderWizard(); };
+  window.__next = function () { step = Math.min(4, step + 1); renderWizard(); };
+  window.__set = function (k, v) { f[k] = v; };
+  window.__upload = function (k) { f[k] = true; renderWizard(); };
+  window.__agree = function (k) { f.agreed[k] = !f.agreed[k]; renderWizard(); };
+  window.__econsent = function () { f.econsent = !f.econsent; renderWizard(); };
+
+  window.__submit = async function () {
+    var btn = document.getElementById('submitBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+    var payload = {
+      applicantName: (f.first + ' ' + f.last).trim(),
+      legalStatus: 'Individual', country: f.country,
+      idDocProvided: !!f.idDoc, addressDocProvided: !!f.addressDoc,
+      ssnProvided: isUS() ? !!(f.ssn && f.ssn.trim()) : false,
+      w8benProvided: isUS() ? false : !!f.w8doc,
+      agreements: f.agreed, eConsent: f.econsent, method: 'NT AOP API'
+    };
+    try {
+      var r = await fetch('/app/application', { method: 'POST', headers: JH, body: JSON.stringify(payload) });
+      var st = await r.json();
+      renderJourney(st && st.journeyIndex != null ? st.journeyIndex : 1);
+      route(st);
+    } catch (e) { if (btn) { btn.disabled = false; btn.textContent = 'Submit to NinjaTrader Clearing'; } alert('Network error: ' + e.message); }
+  };
+
+  // ---- result screens ----
+  function renderApproved(app) {
+    renderJourney(2);
+    stage.innerHTML = '<div class="card"><div class="result ok"><div class="ric">&#10003;</div>' +
+      '<h2>Application submitted to NinjaTrader Clearing</h2>' +
+      '<p>Your application cleared NinjaTrader Clearing\'s Account Opening Process and an account has been provisioned. Fund your account to activate trading.</p>' +
+      '<p style="color:var(--muted2);font-size:12px">Account ' + esc(app.accountIdIssued ? ('#' + app.accountIdIssued) : 'pending') + ' · status: Awaiting Funding</p>' +
+      '<div class="foot" style="justify-content:center"><button class="btn btn-primary" onclick="window.location.href=\'/dashboard\'">Fund your account</button>' +
+      '<button class="btn btn-ghost" onclick="window.location.href=\'/dashboard\'">Go to dashboard</button></div>' +
+      '</div></div>';
+  }
+
+  function renderDocs(app) {
+    renderJourney(1);
+    var docs = (app.documentsRequired || []);
+    stage.innerHTML = '<div class="card"><div class="result warn"><div class="ric">&#9888;</div>' +
+      '<h2>Additional documents needed</h2>' +
+      '<p>NinjaTrader Clearing needs a few more items to verify your identity before your account can be opened.</p>' +
+      '<ul class="doclist">' + (docs.length ? docs : ['Government photo ID', 'Proof of address (< 90 days)']).map(function (d) {
+        return '<li>&#128196; ' + esc(d) + '<span class="pill">Outstanding</span></li>';
+      }).join('') + '</ul>' +
+      '<div class="foot" style="justify-content:center"><button class="btn btn-primary" id="docBtn" onclick="__submitDocs()">Upload documents &amp; resubmit</button></div>' +
+      '<p style="color:var(--muted2);font-size:11.5px;margin-top:6px">[document upload is simulated in this sandbox]</p>' +
+      '</div></div>';
+  }
+
+  window.__submitDocs = async function () {
+    var btn = document.getElementById('docBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+    try {
+      var r = await fetch('/app/application/documents', { method: 'POST', headers: JH, body: JSON.stringify({ idDocProvided: true, addressDocProvided: true, ssnProvided: true, w8benProvided: true }) });
+      route(await r.json());
+    } catch (e) { if (btn) { btn.disabled = false; btn.textContent = 'Upload documents & resubmit'; } alert('Network error: ' + e.message); }
+  };
+
+  function renderRejected() {
+    renderJourney(1);
+    stage.innerHTML = '<div class="card"><div class="result bad"><div class="ric">&#10005;</div>' +
+      '<h2>Application not approved</h2>' +
+      '<p>We\'re sorry — your application was not approved by NinjaTrader Clearing. For questions, please contact support. Account decisions are made by the clearing firm and reasons cannot be shared here.</p>' +
+      '<div class="foot" style="justify-content:center"><button class="btn btn-ghost" onclick="signOut()">Sign out</button></div>' +
+      '</div></div>';
+  }
+})();
+</script>
+</body>
+</html>

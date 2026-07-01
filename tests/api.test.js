@@ -201,3 +201,87 @@ test('metrics endpoint exposes Prometheus counters', async () => {
   const r = await fetch(BASE + '/metrics'); assert.equal(r.status, 200);
   assert.match(await r.text(), /talero_/);
 });
+
+// ---------- AOP / KYC (NinjaTrader Clearing account opening) ----------
+const APP = (t, body) => j('/app/application', { method: 'POST', headers: JH(t), body: JSON.stringify(body) });
+const cleanApp = { legalStatus: 'Individual', country: 'United States', idDocProvided: true, addressDocProvided: true, ssnProvided: true, agreements: { cust: true, nfa: true, risk: true, suit: true, md: true }, eConsent: true };
+
+test('KYC: clean submission is approved, issues a pending account, funding activates it', async () => {
+  const reg = await j('/app/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'kyc.clean@example.com', password: 'password123', firstName: 'Clean', lastName: 'Applicant' }) });
+  const t = reg.body.sessionToken;
+  const sub = await APP(t, cleanApp);
+  assert.equal(sub.status, 200);
+  assert.equal(sub.body.application.status, 'Approved');
+  assert.equal(sub.body.application.lifecycle, 'Awaiting Funding');
+  assert.equal(sub.body.application.kycStatus, 'Verified');
+  assert.ok(sub.body.application.accountIdIssued);
+  assert.equal('rejectionReasonInternal' in sub.body.application, false); // never leak internal fields
+  const me = await j('/app/me', { headers: H(t) });
+  assert.ok(me.body.accounts.length >= 1);
+  assert.equal(me.body.onboarding.application.lifecycle, 'Awaiting Funding');
+  const acctId = sub.body.application.accountIdIssued;
+  await j('/app/account/deposit', { method: 'POST', headers: JH(t), body: JSON.stringify({ accountId: acctId, amount: 2500 }) });
+  const st = await j('/app/application', { headers: H(t) });
+  assert.equal(st.body.application.lifecycle, 'Active');
+});
+
+test('KYC: restricted jurisdiction is rejected, no account, no leaked reason', async () => {
+  const reg = await j('/app/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'kyc.reject@example.com', password: 'password123' }) });
+  const t = reg.body.sessionToken;
+  const sub = await APP(t, { ...cleanApp, country: 'Russia', ssnProvided: false, w8benProvided: true });
+  assert.equal(sub.body.application.status, 'Rejected');
+  assert.equal(sub.body.application.lifecycle, 'Rejected');
+  assert.equal('rejectionReasonInternal' in sub.body.application, false);
+  const me = await j('/app/me', { headers: H(t) });
+  assert.equal((me.body.accounts || []).length, 0);
+});
+
+test('KYC: missing docs -> documents required -> resolved on upload', async () => {
+  const reg = await j('/app/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'kyc.docs@example.com', password: 'password123' }) });
+  const t = reg.body.sessionToken;
+  const sub = await APP(t, { ...cleanApp, idDocProvided: false, addressDocProvided: false, ssnProvided: false });
+  assert.equal(sub.body.application.status, 'Documents required');
+  assert.equal(sub.body.application.lifecycle, 'KYC Pending');
+  assert.ok(sub.body.application.documentsRequired.length >= 1);
+  const done = await j('/app/application/documents', { method: 'POST', headers: JH(t), body: JSON.stringify({ idDocProvided: true, addressDocProvided: true, ssnProvided: true }) });
+  assert.equal(done.body.application.status, 'Approved');
+  assert.ok(done.body.application.accountIdIssued);
+});
+
+test('KYC: agreements incomplete -> Agreements Pending (no account)', async () => {
+  const reg = await j('/app/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'kyc.agree@example.com', password: 'password123' }) });
+  const t = reg.body.sessionToken;
+  const sub = await APP(t, { ...cleanApp, agreements: { cust: true, nfa: true } });
+  assert.equal(sub.body.application.lifecycle, 'Agreements Pending');
+  assert.equal(sub.body.application.accountIdIssued, null);
+});
+
+test('admin: AOP queue lists + filters, approve issues an account (audited)', async () => {
+  const at = await adminToken();
+  const all = await j('/admin/applications', { headers: H(at) });
+  assert.ok(all.body.length >= 7);
+  const pend = await j('/admin/applications?status=' + encodeURIComponent('KYC Pending'), { headers: H(at) });
+  assert.ok(pend.body.length >= 1 && pend.body.every((a) => a.lifecycle === 'KYC Pending'));
+  const ap = await j('/admin/application/approve', { method: 'POST', headers: JH(at), body: JSON.stringify({ id: 90006 }) });
+  assert.equal(ap.body.lifecycle, 'Awaiting Funding'); assert.ok(ap.body.accountIdIssued);
+  const audit = await j('/admin/audit', { headers: H(at) });
+  assert.ok(audit.body.some((e) => e.action === 'application.approve'));
+});
+
+test('admin: reject keeps reason internal; request-docs sets outstanding docs', async () => {
+  const at = await adminToken();
+  const rej = await j('/admin/application/reject', { method: 'POST', headers: JH(at), body: JSON.stringify({ id: 90007, reason: 'KYC / identity could not be verified' }) });
+  assert.equal(rej.body.lifecycle, 'Rejected');
+  assert.equal(rej.body.rejectionReasonInternal, 'KYC / identity could not be verified');
+  const dr = await j('/admin/application/request-docs', { method: 'POST', headers: JH(at), body: JSON.stringify({ id: 90004, documents: ['Proof of address (< 90 days)'] }) });
+  assert.equal(dr.body.status, 'Documents required');
+  assert.deepEqual(dr.body.documentsRequired, ['Proof of address (< 90 days)']);
+});
+
+test('partner: customerApplication/reject sets Rejected + records internal reason', async () => {
+  const t = await partnerToken();
+  const c = await j('/v1/customerApplication/create', { method: 'POST', headers: JH(t), body: JSON.stringify({ applicantEmail: 'preject@example.com' }) });
+  const r = await j('/v1/customerApplication/reject', { method: 'POST', headers: JH(t), body: JSON.stringify({ id: c.body.id, reason: 'Duplicate / fraud signal' }) });
+  assert.equal(r.body.status, 'Rejected');
+  assert.equal(r.body.rejectionReasonInternal, 'Duplicate / fraud signal');
+});

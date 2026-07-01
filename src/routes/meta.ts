@@ -8,6 +8,7 @@ import { store } from '../store';
 route('GET', '/', async (_req, res) => serveSpa(res));
 route('GET', '/auth', async (_req, res) => { if (!serveStatic(res, 'auth.html')) fail(res, 404, 'auth.html missing'); });
 route('GET', '/dashboard', async (_req, res) => { if (!serveStatic(res, 'dashboard.html')) fail(res, 404, 'dashboard.html missing'); });
+route('GET', '/onboarding', async (_req, res) => { if (!serveStatic(res, 'onboarding.html')) fail(res, 404, 'onboarding.html missing'); });
 route('GET', '/metrics', async (_req, res) => { res.writeHead(200, { 'Content-Type': 'text/plain; version=0.0.4' }); res.end(metricsRender()); });
 route('GET', '/admin', async (_req, res) => { if (!serveStatic(res, 'admin.html')) fail(res, 404, 'admin.html missing'); });
 route('GET', '/healthz', async (_req, res) => send(res, 200, { service: 'Talero NT Connect mock', env: ENV_LABEL, backend: store.backend, health: 'ok' }));

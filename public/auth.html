@@ -745,7 +745,7 @@ goTo((location.hash || '#register').slice(1));
       if (!r.ok || d.errorText) { showToast(d.errorText || 'Could not create account.'); return; }
       localStorage.setItem('talero_token', d.sessionToken);
       localStorage.setItem('talero_email', reg.email);
-      setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
+      setTimeout(() => { window.location.href = '/onboarding'; }, 1000);
     } catch (e) { showToast('Network error: ' + e.message); }
   });
 })();

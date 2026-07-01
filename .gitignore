@@ -5,6 +5,8 @@ data/db.json
 service-account*.json
 talero-ninja-api-*.json
 *.iam.gserviceaccount.com.json
+client_secret*.json
+*.apps.googleusercontent.com.json
 *.log
 .DS_Store
 dist/

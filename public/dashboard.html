@@ -1652,8 +1652,8 @@ button.acctbar-select:hover { opacity: .82; }
       var accts = me.accounts || [];
       var primary = accts.filter(function (a) { return a.primary; })[0] || accts[0];
       if (!primary) {
-        var oR = await fetch('/app/account/open', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: JSON.stringify({ legalStatus: 'Individual', nickname: 'My Futures Account' }) });
-        primary = await oR.json(); accts = [primary];
+        // No brokerage account yet -> route through the NinjaTrader Clearing AOP (KYC) first.
+        window.location.replace('/onboarding'); return null;
       }
       var bundle = null;
       if (primary && primary.id != null) { var bR = await fetch('/app/account?id=' + primary.id, { headers: h }); bundle = await bR.json(); }

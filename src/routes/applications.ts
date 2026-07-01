@@ -2,30 +2,72 @@ import { route } from '../router';
 import { send, fail } from '../lib/http';
 import { requireAuth } from '../middleware/auth';
 import { nowIso } from '../lib/time';
-import { nextAccountId, genPassword } from '../services/accounts';
+import { provisionFromApplication } from '../services/accounts';
+import { AOP, KYC, LIFECYCLE } from '../services/aop';
+import { appendEvent } from '../lib/audit';
 import { store } from '../store';
-import type { Row } from '../types';
 
-route('GET', '/v1/customerApplication/list', async (req, res) => { if (!requireAuth(req, res)) return; send(res, 200, await store.list('CustomerApplications')); });
+// Partner-facing NT Connect "Customer Applications" group — the AOP (Account Opening Process)
+// API mock. NinjaTrader Clearing owns the KYC/AML decision; these endpoints model receiving an
+// application and relaying approve / reject / documents-required. Talero's customer (/app) and
+// back-office (/admin) layers use the same shared AOP model (services/aop.ts).
+
+route('GET', '/v1/customerApplication/list', async (req, res) => {
+  if (!requireAuth(req, res)) return;
+  send(res, 200, await store.list('CustomerApplications'));
+});
+
 route('GET', '/v1/customerApplication/item', async (req, res, ctx) => {
   if (!requireAuth(req, res)) return;
   const a = await store.getById('CustomerApplications', ctx.query.id);
   a ? send(res, 200, a) : fail(res, 404, 'Application not found.');
 });
+
 route('POST', '/v1/customerApplication/create', async (req, res, ctx) => {
   if (!requireAuth(req, res)) return;
   const b = ctx.body || {};
   if (!b.applicantEmail) return fail(res, 400, 'applicantEmail is required.');
-  send(res, 200, await store.insert('CustomerApplications', { applicantEmail: b.applicantEmail, legalStatus: b.legalStatus || 'Individual', status: 'Submitted', submittedAt: nowIso(), decisionAt: null, documentsRequired: '', accountIdIssued: null, method: b.method || 'NT AOP API' }));
+  const rec = await store.insert('CustomerApplications', {
+    applicantEmail: String(b.applicantEmail).toLowerCase(),
+    applicantName: b.applicantName || '',
+    legalStatus: b.legalStatus || 'Individual',
+    country: b.country || 'United States',
+    status: AOP.SUBMITTED,
+    kycStatus: KYC.PENDING,
+    lifecycle: LIFECYCLE.APPLICATION_STARTED,
+    documentsRequired: [],
+    submittedAt: nowIso(),
+    decisionAt: null,
+    accountIdIssued: null,
+    method: b.method || 'NT AOP API',
+    rejectionReasonInternal: null,
+  });
+  send(res, 200, rec);
 });
+
 route('POST', '/v1/customerApplication/approve', async (req, res, ctx) => {
   if (!requireAuth(req, res)) return;
   const b = ctx.body || {};
   const app = await store.getById('CustomerApplications', b.id);
   if (!app) return fail(res, 404, 'Application not found.');
-  let user: Row | null = await store.findOne('OrgUsers', { email: String(app.applicantEmail) });
-  if (!user) user = await store.insert('OrgUsers', { name: String(app.applicantEmail).split('@')[0], email: app.applicantEmail, firstName: '', lastName: '', userStatus: 'Active', organizationId: 5012, roles: 'Trader', professionalStatus: 'NonProfessional', timestamp: nowIso() });
-  const id = await nextAccountId();
-  await store.insert('Accounts', { id, name: `TAL-${id}`, userId: user.id, accountType: 'Customer', active: false, clearingHouse: 'NinjaTrader Clearing, LLC', riskCategoryId: 1, autoLiqProfileId: 2, marginAccountType: 'Speculator', legalStatus: app.legalStatus, archived: false, nickname: `${app.applicantEmail} — ${app.legalStatus}`, ownerEmail: app.applicantEmail, platformPassword: genPassword(), state: 'pending_funding', provisioning: 'provisioned', primary: false, openedDate: nowIso().slice(0, 10), timestamp: nowIso() });
-  send(res, 200, await store.update('CustomerApplications', app.id, { status: 'Approved', decisionAt: nowIso(), accountIdIssued: id }));
+  const { acct } = await provisionFromApplication(app);
+  const updated = await store.update('CustomerApplications', app.id, {
+    status: AOP.APPROVED, kycStatus: KYC.VERIFIED, lifecycle: LIFECYCLE.AWAITING_FUNDING,
+    decisionAt: nowIso(), accountIdIssued: acct.id,
+  });
+  await appendEvent('application.approve', 'partner', { applicationId: app.id, accountId: acct.id });
+  send(res, 200, updated);
+});
+
+route('POST', '/v1/customerApplication/reject', async (req, res, ctx) => {
+  if (!requireAuth(req, res)) return;
+  const b = ctx.body || {};
+  const app = await store.getById('CustomerApplications', b.id);
+  if (!app) return fail(res, 404, 'Application not found.');
+  const updated = await store.update('CustomerApplications', app.id, {
+    status: AOP.REJECTED, kycStatus: KYC.ACTION_REQUIRED, lifecycle: LIFECYCLE.REJECTED,
+    decisionAt: nowIso(), rejectionReasonInternal: b.reason || 'Compliance',
+  });
+  await appendEvent('application.reject', 'partner', { applicationId: app.id, reason: b.reason || 'Compliance' });
+  send(res, 200, updated);
 });
