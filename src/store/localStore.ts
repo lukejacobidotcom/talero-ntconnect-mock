@@ -9,7 +9,7 @@ const DB_PATH = path.join(DATA_DIR, 'db.json');
 export const TABLES = [
   'ApiKeys', 'OrgUsers', 'Accounts', 'CashBalances', 'Positions',
   'Orders', 'Funds', 'CustomerApplications', 'RiskSettings',
-  'Contracts', 'Fees', 'Alerts',
+  'Contracts', 'Fees', 'Alerts', 'Events', 'Idempotency',
 ] as const;
 
 type DB = Record<string, Row[] | Row>;

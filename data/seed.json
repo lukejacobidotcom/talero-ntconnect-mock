@@ -52,7 +52,8 @@
       "organizationId": 5012,
       "roles": "OrgAdmin",
       "professionalStatus": "NonProfessional",
-      "timestamp": "2026-05-01T09:00:00Z"
+      "timestamp": "2026-05-01T09:00:00Z",
+      "passwordHash": "scrypt$6724420c59582d036ab3e726fb089878$bf385968eb43eb7b87a327fc905d1d5b7ce10c4b50069bfe5d84bc528b810f7712e8a1cffe2380124ebc94f7f55a2ca95aa6b346a3f02f19ceb8272ecce18011"
     },
     {
       "id": 700102,
@@ -682,5 +683,7 @@
       "status": "open",
       "createdAt": "2026-06-20T08:20:00Z"
     }
-  ]
+  ],
+  "Events": [],
+  "Idempotency": []
 }

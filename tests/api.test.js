@@ -166,3 +166,38 @@ test('oauth: tampered state is rejected', async () => {
   const r = await fetch(BASE + '/oauth/callback?provider=google&state=bad&sim=x', { redirect: 'manual' });
   assert.equal(r.status, 400);
 });
+async function adminToken() {
+  const r = await j('/app/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'ops@talero.markets', password: 'TaleroAdmin1!' }) });
+  return r.body.sessionToken;
+}
+test('admin: customer forbidden (403), admin allowed (200)', async () => {
+  const cust = (await j('/app/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'jordan.castillo@example.com', password: 'TaleroDemo1!' }) })).body.sessionToken;
+  assert.equal((await j('/admin/summary', { headers: H(cust) })).status, 403);
+  const at = await adminToken(); assert.ok(at);
+  const s = await j('/admin/summary', { headers: H(at) });
+  assert.equal(s.status, 200); assert.ok(s.body.accounts >= 5);
+});
+test('admin: users list omits passwordHash; suspend+reactivate are audited', async () => {
+  const at = await adminToken(); const h = H(at);
+  const users = await j('/admin/users', { headers: h });
+  assert.ok(users.body.length >= 5 && users.body.every((u) => !('passwordHash' in u)));
+  await j('/admin/account/suspend', { method: 'POST', headers: JH(at), body: JSON.stringify({ accountId: 1912208 }) });
+  assert.equal((await j('/admin/account?id=1912208', { headers: h })).body.account.state, 'suspended');
+  await j('/admin/account/reactivate', { method: 'POST', headers: JH(at), body: JSON.stringify({ accountId: 1912208 }) });
+  const audit = await j('/admin/audit', { headers: h });
+  assert.ok(audit.body.some((e) => e.action === 'account.suspend'));
+});
+test('idempotent deposit does not double-credit', async () => {
+  const reg = await j('/app/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'idem@example.com', password: 'password123' }) });
+  const tok = reg.body.sessionToken;
+  const id = (await j('/app/account/open', { method: 'POST', headers: JH(tok), body: JSON.stringify({}) })).body.id;
+  const hk = H(tok, { 'Content-Type': 'application/json', 'Idempotency-Key': 'dep-abc-123' });
+  await j('/app/account/deposit', { method: 'POST', headers: hk, body: JSON.stringify({ accountId: id, amount: 500 }) });
+  await j('/app/account/deposit', { method: 'POST', headers: hk, body: JSON.stringify({ accountId: id, amount: 500 }) });
+  const bal = (await j('/app/account?id=' + id, { headers: H(tok) })).body.balance;
+  assert.equal(bal.cashBalance, 500);
+});
+test('metrics endpoint exposes Prometheus counters', async () => {
+  const r = await fetch(BASE + '/metrics'); assert.equal(r.status, 200);
+  assert.match(await r.text(), /talero_/);
+});

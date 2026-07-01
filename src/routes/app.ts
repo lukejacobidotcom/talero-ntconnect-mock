@@ -4,6 +4,7 @@ import { requireCustomer } from '../middleware/auth';
 import { isEmail, validAmount } from '../services/validation';
 import { ownedAccount, nextAccountId, genPassword } from '../services/accounts';
 import { withLock } from '../lib/lock';
+import { appendEvent } from '../lib/audit';
 import { nowIso, tradeDateToday } from '../lib/time';
 import * as token from '../lib/token';
 import * as password from '../lib/password';
@@ -71,6 +72,11 @@ route('POST', '/app/account/deposit', async (req, res, ctx) => {
   if (amt > MAX_DEPOSIT) return fail(res, 400, 'amount exceeds the per-transaction limit.');
   const { acct, error } = await ownedAccount(claims, b.accountId);
   if (error || !acct) return fail(res, 404, error || 'Account not found.');
+  const idemKey = req.headers['idempotency-key'] as string | undefined;
+  if (idemKey) {
+    const seen = await store.findOne('Idempotency', { key: 'deposit:' + idemKey });
+    if (seen) return send(res, 200, seen.result as Record<string, unknown>);
+  }
   await withLock(acct.id as number, async () => {
     await store.insert('Funds', { accountId: acct.id, type: 'deposit', method: b.method || 'ACH (Plaid)', amount: amt, currency: 'USD', status: 'settled', reference: `DEP-${Date.now()}-${acct.id}`, createdAt: nowIso(), settledAt: nowIso(), destinationOfRecord: 'NinjaTrader Clearing, LLC' });
     const snaps = await store.list('CashBalances', { accountId: acct.id });
@@ -82,6 +88,8 @@ route('POST', '/app/account/deposit', async (req, res, ctx) => {
     }
     if (!acct.active) await store.update('Accounts', acct.id, { active: true, state: 'active' });
   });
+  await appendEvent('funds.deposit', String(claims.email), { accountId: acct.id, amount: amt });
+  if (idemKey) await store.insert('Idempotency', { key: 'deposit:' + idemKey, result: { ok: true, deposited: amt }, timestamp: nowIso() });
   send(res, 200, { ok: true, deposited: amt });
 });
 
@@ -110,5 +118,6 @@ route('POST', '/app/account/simulate', async (req, res, ctx) => {
     const cash = Math.round(((Number(snap.cashBalance) || 0) + realized) * 100) / 100;
     return store.update('CashBalances', snap.id, { cashBalance: cash, totalCashValue: cash, realizedPnL: Math.round(((Number(snap.realizedPnL) || 0) + realized) * 100) / 100, weekRealizedPnL: Math.round(((Number(snap.weekRealizedPnL) || 0) + realized) * 100) / 100, openPnL: open, netLiq: Math.round((cash + open) * 100) / 100, availableForTrading: cash, timestamp: nowIso() });
   });
+  await appendEvent('trade.simulate', String(claims.email), { accountId: acct.id, symbol: pick.name, side, qty, realized });
   send(res, 200, { ok: true, trade: { symbol: pick.name, side, qty, price: px, realized, openPnL: open }, balance: updated });
 });

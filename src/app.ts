@@ -4,6 +4,8 @@ import { getRoutes } from './router';
 import { send, fail, readBody, serveStatic, serveSpa } from './lib/http';
 import { requireCustomer } from './middleware/auth';
 import { store } from './store';
+import { log, reqId } from './lib/logger';
+import * as metrics from './lib/metrics';
 
 // Register all routes (side-effect imports).
 import './routes/meta';
@@ -17,8 +19,17 @@ import './routes/applications';
 import './routes/market';
 import './routes/app';
 import './routes/oauth';
+import './routes/admin';
 
 export const server = http.createServer(async (req, res) => {
+  const rid = reqId();
+  const t0 = Date.now();
+  res.setHeader('X-Request-Id', rid);
+  res.on('finish', () => {
+    metrics.inc('http_requests_total');
+    metrics.inc('http_' + String(res.statusCode)[0] + 'xx');
+    log('info', 'req', { id: rid, method: req.method, url: req.url, status: res.statusCode, ms: Date.now() - t0 });
+  });
   if (req.method === 'OPTIONS') return send(res, 204, '');
   const url = new URL(req.url || '/', `http://localhost:${PORT}`);
   const path = url.pathname.replace(/\/+$/, '') || '/';
